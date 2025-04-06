@@ -1,52 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>TRON Self-Learning AGI</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-  <script src="three-tron.js"></script>
-  <script src="agi.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRON Autonomous Learning Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/geometries/TextGeometry.js"></script>
+    <script src="three-tron.js"></script>
+    <script src="agi.js"></script>
 </head>
 <body>
-  <div id="loading">Initializing Neural Matrix...</div>
-  
-  <div id="tron-container"></div>
-  
-  <div id="hud">
-    <div class="hud-item">
-      <span class="hud-label">Learning Rate:</span>
-      <span id="learning-rate">0.72</span>
+    <audio id="startup-sound" src="sounds/startup.mp3" preload="auto"></audio>
+    <audio id="input-sound" src="sounds/input.mp3" preload="auto"></audio>
+    <audio id="response-sound" src="sounds/response.mp3" preload="auto"></audio>
+
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="disk"></div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <div class="loading-text">INITIALIZING AUTONOMOUS LEARNING CORE</div>
+            <div class="version">v2.3.7</div>
+        </div>
     </div>
-    <div class="hud-item">
-      <span class="hud-label">Memory Nodes:</span>
-      <span id="memory-nodes">1,024</span>
+
+    <div id="tron-container"></div>
+
+    <div id="hud">
+        <div class="hud-panel">
+            <div class="hud-header">SYSTEM STATUS</div>
+            <div class="hud-item">
+                <span class="hud-label">CORE TEMP:</span>
+                <span id="core-temp">37.2°C</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">MEMORY USAGE:</span>
+                <span id="memory-usage">42%</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">LEARNING RATE:</span>
+                <span id="learning-rate">0.82</span>
+            </div>
+        </div>
+
+        <div class="hud-panel">
+            <div class="hud-header">NEURAL NETWORK</div>
+            <div class="hud-item">
+                <span class="hud-label">NODES:</span>
+                <span id="neural-nodes">1,847</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">CONNECTIONS:</span>
+                <span id="neural-connections">28,419</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">SESSION:</span>
+                <span id="session-id">TRON-ALC-9X4P2</span>
+            </div>
+        </div>
     </div>
-    <div class="hud-item">
-      <span class="hud-label">Session:</span>
-      <span id="session-id">TRON-AGI-7X2P9</span>
+
+    <div id="console-container">
+        <div id="console-header">
+            <div class="console-tab active" data-tab="main">MAINFRAME</div>
+            <div class="console-tab" data-tab="memory">MEMORY CORE</div>
+            <div class="console-tab" data-tab="network">NEURAL NET</div>
+            <div class="console-controls">
+                <button id="save-btn">SAVE STATE</button>
+                <button id="reset-btn">RESET VIEW</button>
+            </div>
+        </div>
+        <div id="console">
+            <div id="output"></div>
+            <div id="input-container">
+                <input type="text" id="user-input" placeholder="DIRECT INPUT..." autocomplete="off">
+                <button id="submit">
+                    <span>EXECUTE</span>
+                    <div class="pulse"></div>
+                </button>
+                <button id="voice-btn"></button>
+            </div>
+        </div>
     </div>
-  </div>
-  
-  <div id="console">
-    <div id="output"></div>
-    <div id="input-container">
-      <input type="text" id="user-input" placeholder="Direct Input..." autocomplete="off">
-      <button id="submit">Execute</button>
-      <button id="save-btn">Save State</button>
-    </div>
-  </div>
-  
-  <script>
-    window.onload = function() {
-      initTronEnvironment();
-      window.agi = new SelfLearningAGI();
-      
-      // Load saved state if available
-      if(localStorage.getItem('agiState')) {
-        agi.loadState();
-      }
-    };
-  </script>
+
+    <div id="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Play startup sound
+            const startupSound = document.getElementById('startup-sound');
+            startupSound.volume = 0.3;
+            startupSound.play();
+
+            // Initialize systems
+            setTimeout(() => {
+                initTronEnvironment();
+                window.agi = new SelfLearningAGI();
+                
+                // Load saved state if available
+                if(localStorage.getItem('agiState')) {
+                    agi.loadState();
+                }
+
+                // Hide loading screen
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 1000);
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
