@@ -1,34 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tron: AGI Grid World</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRONA AGI Grid</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="tron-grid">
-        <!-- Tron grid cells will be generated dynamically -->
-    </div>
-    <div class="info-panel">
-        <h2>AGI System Status</h2>
-        <p id="grid-status">Grid Activated: <span id="gs-value" style="color: #00FF00;">ONLINE</span></p>
-        <p id="self-awareness">Self-Awareness: <span id="sa-value" style="color: #00FF00;">ONLINE</span></p>
-        <p id="learning-rate">Learning Rate: <span id="lr-value">100</span></p>
-        <p id="intelligence-quotient">Intelligence Quotient: <span id="iq-value">150</span></p>
-    </div>
-    <div class="communication-panel">
-        <h2>Communicate with AGI</h2>
-        <input id="user-input" type="text" placeholder="Type a message...">
-        <button id="send-button">Send</button>
-        <div id="conversation-log">
-            <!-- Conversation log will be generated dynamically -->
-        </div>
-    </div>
-    <div class="tron-footer">
-        <p>&copy; 2023 ENCOM</p>
-    </div>
-
-    <script src="script.js"></script>
+  <h1>TRONA AGI Grid</h1>
+  <canvas id="gridCanvas" width="640" height="640"></canvas>
+  <div id="console">
+    <input type="text" id="commandInput" placeholder="Enter command (up, down, etc.)" />
+    <button onclick="sendCommand()">Send</button>
+    <pre id="response"></pre>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
