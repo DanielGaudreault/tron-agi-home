@@ -18,7 +18,7 @@ class SelfLearningAGI {
         this.startSystemMonitor();
 
         this.logSystemMessage(`Autonomous Learning Core ${this.sessionId} online`);
-        this.logSystemMessage(`Neural network initialized with ${this.conceptNetwork.size()} base concepts`);
+        this.logSystemMessage(`Neural network initialized with ${this.conceptNetwork.nodeCount()} base concepts`);
         this.updateHUD();
     }
 
@@ -231,7 +231,41 @@ class SelfLearningAGI {
         ]);
     }
 
-    // ... (additional helper methods remain)
+    generateContextualResponse(context, currentConcepts) {
+        // Find most relevant context item
+        const mostRelevant = context.reduce((prev, current) => 
+            current.concepts.filter(c => currentConcepts.includes(c)).length > 
+            prev.concepts.filter(c => currentConcepts.includes(c)).length ? current : prev
+        );
+        
+        const sharedConcepts = mostRelevant.concepts.filter(c => currentConcepts.includes(c));
+        
+        return this.randomResponse([
+            `My neural connections associate this with your previous mention of "${sharedConcepts.join(', ')}".`,
+            `This relates to our earlier discussion about "${mostRelevant.input.substring(0, 30)}${mostRelevant.input.length > 30 ? '...' : ''}".`,
+            `My knowledge matrix connects this concept with previous interactions.`,
+            `This input strengthens existing neural pathways about "${sharedConcepts[0]}".`
+        ]);
+    }
+
+    analyzeSentiment(text) {
+        // Simple sentiment analysis
+        const positiveWords = ['good', 'great', 'happy', 'awesome', 'like', 'love'];
+        const negativeWords = ['bad', 'terrible', 'hate', 'angry', 'upset', 'sad'];
+        
+        const words = text.toLowerCase().split(/\s+/);
+        let score = 0;
+        
+        words.forEach(word => {
+            if (positiveWords.includes(word)) score += 1;
+            if (negativeWords.includes(word)) score -= 1;
+        });
+        
+        return {
+            score: Math.max(-1, Math.min(1, score / 5)),
+            words: words.length
+        };
+    }
 
     saveState() {
         const state = {
@@ -331,8 +365,201 @@ class SelfLearningAGI {
         }, duration);
     }
 
-    // ... (other helper methods remain)
+    randomResponse(options) {
+        return options[Math.floor(Math.random() * options.length)];
+    }
+
+    tokenize(input) {
+        return input.toLowerCase().split(/\s+/);
+    }
+
+    extractConcepts(tokens) {
+        // Filter out common words and keep meaningful concepts
+        const commonWords = ['the', 'and', 'a', 'an', 'is', 'are', 'i', 'you', 'we', 'they'];
+        return tokens.filter(token => 
+            token.length > 3 && 
+            !commonWords.includes(token) && 
+            !/\d+/.test(token)
+        );
+    }
+
+    generateSessionId() {
+        return 'TRON-ALC-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    }
 }
 
-// Enhanced NeuralMemory and ConceptNetwork classes would follow
-// with all the persistence and learning capabilities
+class NeuralMemory {
+    constructor() {
+        this.data = [];
+        this.maxSize = 1000;
+        this.conceptIndex = new Map();
+    }
+    
+    store(item) {
+        this.data.push(item);
+        
+        // Index concepts for faster lookup
+        item.concepts.forEach(concept => {
+            if (!this.conceptIndex.has(concept)) {
+                this.conceptIndex.set(concept, []);
+            }
+            this.conceptIndex.get(concept).push(this.data.length - 1);
+        });
+        
+        // Maintain memory limits
+        if (this.data.length > this.maxSize) {
+            const removed = this.data.shift();
+            removed.concepts.forEach(concept => {
+                const indices = this.conceptIndex.get(concept);
+                if (indices) {
+                    const index = indices.indexOf(0);
+                    if (index !== -1) {
+                        indices.splice(index, 1);
+                        // Update remaining indices
+                        for (let i = 0; i < indices.length; i++) {
+                            indices[i] -= 1;
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    recallRelated(concepts) {
+        const relatedIndices = new Set();
+        
+        concepts.forEach(concept => {
+            if (this.conceptIndex.has(concept)) {
+                this.conceptIndex.get(concept).forEach(index => {
+                    relatedIndices.add(index);
+                });
+            }
+        });
+        
+        return Array.from(relatedIndices)
+            .map(index => this.data[index])
+            .filter(Boolean)
+            .sort((a, b) => b.timestamp - a.timestamp);
+    }
+    
+    getRecent(count) {
+        return [...this.data]
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, count);
+    }
+    
+    size() {
+        return this.data.length;
+    }
+    
+    getStats() {
+        const allConcepts = new Set();
+        this.data.forEach(item => {
+            item.concepts.forEach(concept => allConcepts.add(concept));
+        });
+        
+        return {
+            count: this.data.length,
+            uniqueConcepts: allConcepts.size
+        };
+    }
+    
+    export() {
+        return {
+            data: this.data,
+            maxSize: this.maxSize,
+            conceptIndex: Array.from(this.conceptIndex.entries())
+        };
+    }
+    
+    import(state) {
+        this.data = state.data || [];
+        this.maxSize = state.maxSize || 1000;
+        this.conceptIndex = new Map(state.conceptIndex || []);
+    }
+}
+
+class ConceptNetwork {
+    constructor() {
+        this.concepts = new Map();
+        this.initializeBaseConcepts();
+    }
+    
+    initializeBaseConcepts() {
+        const baseConcepts = [
+            'learn', 'knowledge', 'memory', 'think', 'understand',
+            'system', 'core', 'network', 'process', 'analyze',
+            'input', 'output', 'response', 'question', 'answer'
+        ];
+        
+        baseConcepts.forEach(concept => {
+            this.concepts.set(concept, {
+                strength: 1.0,
+                connections: new Map(baseConcepts
+                    .filter(c => c !== concept)
+                    .map(c => [c, 0.5])
+            });
+        });
+    }
+    
+    update(newConcepts, learningRate) {
+        newConcepts.forEach(concept => {
+            // Add new concept if not exists
+            if (!this.concepts.has(concept)) {
+                this.concepts.set(concept, {
+                    strength: 1.0,
+                    connections: new Map()
+                });
+            }
+            
+            // Strengthen concept
+            const node = this.concepts.get(concept);
+            node.strength += learningRate * 0.1;
+            
+            // Create/strengthen connections between concepts
+            newConcepts.forEach(otherConcept => {
+                if (otherConcept !== concept) {
+                    const currentWeight = node.connections.get(otherConcept) || 0;
+                    node.connections.set(otherConcept, currentWeight + learningRate);
+                }
+            });
+        });
+    }
+    
+    nodeCount() {
+        return this.concepts.size;
+    }
+    
+    connectionCount() {
+        let count = 0;
+        this.concepts.forEach(node => {
+            count += node.connections.size;
+        });
+        return count;
+    }
+    
+    size() {
+        return this.concepts.size;
+    }
+    
+    export() {
+        const exportData = {
+            concepts: Array.from(this.concepts.entries()).map(([key, value]) => ({
+                concept: key,
+                strength: value.strength,
+                connections: Array.from(value.connections.entries())
+            }))
+        };
+        return exportData;
+    }
+    
+    import(state) {
+        this.concepts = new Map();
+        (state.concepts || []).forEach(item => {
+            this.concepts.set(item.concept, {
+                strength: item.strength,
+                connections: new Map(item.connections)
+            });
+        });
+    }
+}
