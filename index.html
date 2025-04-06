@@ -4,56 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRON Light Cycles</title>
-    <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-        #ui {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: #0ff;
-            font-family: 'Courier New', monospace;
-            text-shadow: 0 0 5px #0ff;
-        }
-        #start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,20,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #0ff;
-        }
-        input, button {
-            background: #001133;
-            color: #0ff;
-            border: 1px solid #0ff;
-            padding: 10px;
-            margin: 5px;
-            font-family: 'Courier New', monospace;
-        }
-        button:hover {
-            background: #0ff;
-            color: #001133;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 </head>
 <body>
     <div id="start-screen">
-        <h1>TRON LIGHT CYCLES</h1>
-        <input type="text" id="player-name" placeholder="Enter your name" maxlength="12">
-        <button id="start-button">START GAME</button>
+        <div class="title-container">
+            <h1>TRON</h1>
+            <h2>LIGHT CYCLE BATTLE</h2>
+        </div>
+        <div class="form-container">
+            <input type="text" id="player-name" placeholder="ENTER YOUR NAME" maxlength="12">
+            <button id="start-button">ENTER THE GRID</button>
+        </div>
     </div>
-    <div id="ui">
-        <div id="score">Players: 0</div>
-        <div id="position">Position: (0, 0)</div>
+    
+    <div id="game-ui">
+        <div class="player-info">
+            <div class="player-name">PLAYER</div>
+            <div class="player-score">ENERGY: 100%</div>
+        </div>
+        <div class="game-stats">
+            <div class="stat"><span>PLAYERS:</span> <span id="player-count">1</span></div>
+            <div class="stat"><span>POSITION:</span> <span id="player-position">0,0</span></div>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    
     <script src="script.js"></script>
 </body>
 </html>
