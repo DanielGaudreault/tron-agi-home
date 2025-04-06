@@ -1,1 +1,38 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: 'Courier New', monospace;
+}
 
+#grid-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+#chat-ui {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 300px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+#chat-output {
+  height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+#user-input {
+  width: 100%;
+  background: black;
+  color: #00ffff;
+  border: 1px solid #00ffff;
+  padding: 8px;
+  font-family: 'Courier New', monospace;
+}
