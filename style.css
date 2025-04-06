@@ -6,15 +6,19 @@ body {
 
 .tron-grid {
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
+    grid-template-columns: repeat(50, 1fr);
     gap: 2px;
     margin: 20px;
 }
 
 .cell {
-    background-color: #00FF00; /* Active cell color */
+    background-color: #333; /* Inactive cell color */
     padding: 10px;
     border-radius: 5px;
+}
+
+.cell.active {
+    background-color: #00FF00; /* Active cell color */
     box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.5);
 }
 
