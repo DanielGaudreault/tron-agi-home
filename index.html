@@ -3,43 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON AGI Core v3.0</title>
+    <title>TRON AGI Core v3.1</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Orbitron';
+            src: url('assets/fonts/Orbitron.ttf') format('truetype');
+        }
+    </style>
 </head>
 <body>
-    <!-- Audio Elements -->
-    <audio id="startup-sound" src="assets/sounds/startup.mp3" preload="auto"></audio>
-    <audio id="input-sound" src="assets/sounds/input.mp3" preload="auto"></audio>
-    <audio id="response-sound" src="assets/sounds/response.mp3" preload="auto"></audio>
-    <audio id="error-sound" src="assets/sounds/error.mp3" preload="auto"></audio>
-
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader-grid">
             <div class="grid-line vertical"></div>
             <div class="grid-line horizontal"></div>
             <div class="center-dot"></div>
-            <div class="loading-text">
-                <span class="loading-letter">L</span>
-                <span class="loading-letter">O</span>
-                <span class="loading-letter">A</span>
-                <span class="loading-letter">D</span>
-                <span class="loading-letter">I</span>
-                <span class="loading-letter">N</span>
-                <span class="loading-letter">G</span>
-            </div>
+            <div class="loading-text">INITIALIZING</div>
             <div class="progress-container">
                 <div class="progress-bar"></div>
                 <div class="progress-text">0%</div>
             </div>
-            <div class="version">SYSTEM v3.0.1</div>
+            <div class="version">SYSTEM v3.1</div>
         </div>
     </div>
 
-    <!-- Main 3D Container -->
+    <!-- Main Container -->
     <div id="tron-container"></div>
 
     <!-- System HUD -->
@@ -125,62 +116,48 @@
         </div>
     </div>
 
-    <!-- System Notifications -->
+    <!-- System Notification -->
     <div id="system-notification"></div>
 
     <!-- Scripts -->
     <script src="three-tron.js"></script>
     <script src="agi.js"></script>
     <script>
-        // Initialize system when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simulate loading progress
-            let progress = 0;
-            const progressInterval = setInterval(function() {
-                progress += Math.random() * 10;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(progressInterval);
+        // Initialize system with loading simulation
+        let loadingProgress = 0;
+        const loadingInterval = setInterval(() => {
+            loadingProgress += Math.random() * 15;
+            if (loadingProgress >= 100) {
+                loadingProgress = 100;
+                clearInterval(loadingInterval);
+                
+                // Initialize systems
+                try {
+                    initTronEnvironment();
+                    window.agi = new SelfLearningAGI();
                     
-                    // Initialize systems after loading
-                    setTimeout(initializeSystems, 500);
+                    // Hide loading screen
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('loading-screen').style.display = 'none';
+                        }, 1000);
+                    }, 500);
+                } catch (error) {
+                    console.error("Initialization error:", error);
+                    document.getElementById('loading-screen').innerHTML = `
+                        <div class="error-screen">
+                            <div class="error-code">SYSTEM ERROR 0x${Math.floor(Math.random() * 10000).toString(16)}</div>
+                            <div class="error-message">Initialization failed</div>
+                            <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
+                        </div>
+                    `;
                 }
-                
-                document.querySelector('.progress-bar').style.width = progress + '%';
-                document.querySelector('.progress-text').textContent = Math.floor(progress) + '%';
-            }, 100);
-            
-            // Play startup sound
-            const startupSound = document.getElementById('startup-sound');
-            startupSound.volume = 0.4;
-            startupSound.play().catch(e => console.log("Audio playback prevented:", e));
-        });
-
-        function initializeSystems() {
-            try {
-                // Initialize 3D environment
-                initTronEnvironment();
-                
-                // Initialize AGI core
-                window.agi = new SelfLearningAGI();
-                
-                // Hide loading screen
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }, 1000);
-                
-            } catch (error) {
-                console.error("System initialization failed:", error);
-                document.getElementById('loading-screen').innerHTML = `
-                    <div class="error-screen">
-                        <div class="error-code">SYSTEM ERROR 0x${Math.floor(Math.random() * 10000).toString(16)}</div>
-                        <div class="error-message">Failed to initialize AGI core</div>
-                        <button class="retry-btn" onclick="window.location.reload()">RETRY INITIALIZATION</button>
-                    </div>
-                `;
             }
-        }
+            
+            document.querySelector('.progress-bar').style.width = loadingProgress + '%';
+            document.querySelector('.progress-text').textContent = Math.floor(loadingProgress) + '%';
+        }, 200);
     </script>
 </body>
 </html>
