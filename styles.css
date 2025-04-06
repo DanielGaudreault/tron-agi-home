@@ -1,4 +1,4 @@
-/* Tron Grid Core */
+/* === TRON GRID THEME === */
 body {
     font-family: 'Orbitron', sans-serif;
     background-color: #000;
@@ -6,12 +6,12 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    text-align: center;
+    height: 100vh;
+    text-shadow: 0 0 5px #0ff;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-.grid-lines {
+/* Grid Pulse (Animated Background) */
+.grid-pulse {
     position: fixed;
     top: 0;
     left: 0;
@@ -20,40 +20,63 @@ body {
     background: 
         linear-gradient(to right, #000 1px, transparent 1px),
         linear-gradient(to bottom, #000 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: -1;
+    background-size: 30px 30px;
+    z-index: -2;
     opacity: 0.3;
+    animation: grid-pulse 10s infinite;
 }
 
+@keyframes grid-pulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+}
+
+/* Main Container */
 .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
+/* Header */
 header {
+    text-align: center;
     padding: 20px;
     border-bottom: 1px solid #0ff;
-    text-shadow: 0 0 10px #0ff;
 }
 
-/* ISOs (Animated Digital Lifeforms) */
-.grid-core {
+h1 {
+    font-size: 3em;
+    margin: 0;
+    animation: glow 2s infinite alternate;
+}
+
+.subtitle {
+    color: #ff00ff;
+    margin: 5px 0;
+}
+
+/* ISO Core (Floating Digital Lifeforms) */
+.iso-core {
     position: relative;
     height: 300px;
-    margin: 50px auto;
+    margin: 20px auto;
     border: 2px dashed #0ff;
     border-radius: 50%;
-    width: 300px;
+    width: 80%;
+    overflow: hidden;
 }
 
 .iso {
     position: absolute;
     font-size: 24px;
-    color: #ff00ff; /* ISO Purple */
-    animation: float 5s infinite ease-in-out;
+    color: #ff00ff;
+    animation: float 8s infinite ease-in-out;
     text-shadow: 0 0 15px #ff00ff;
+    user-select: none;
 }
 
 @keyframes float {
@@ -63,20 +86,34 @@ header {
     75% { transform: translate(40px, 20px); }
 }
 
-/* Control Panel */
-.control-panel {
-    margin: 20px auto;
-    padding: 20px;
+/* Console (Terminal Log) */
+.console {
     border: 1px solid #0ff;
-    max-width: 500px;
+    padding: 15px;
+    margin-top: 20px;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.console-log {
+    height: 150px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #0ff;
+    padding-bottom: 10px;
+}
+
+.command-panel {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
 }
 
 button {
     background: #000;
     color: #0ff;
     border: 1px solid #0ff;
-    padding: 15px 30px;
-    margin: 10px;
+    padding: 12px 25px;
     font-family: 'Orbitron', sans-serif;
     cursor: pointer;
     transition: all 0.3s;
@@ -85,26 +122,37 @@ button {
 button:hover {
     background: #0ff;
     color: #000;
-    box-shadow: 0 0 20px #0ff;
+    box-shadow: 0 0 15px #0ff;
 }
 
-.output-log {
-    height: 100px;
-    border: 1px solid #0ff;
-    margin-top: 20px;
-    overflow-y: auto;
+/* AGI Effects */
+.agi-active {
+    animation: agi-pulse 1s infinite, shake 0.5s infinite;
+}
+
+@keyframes agi-pulse {
+    0%, 100% { color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
+    50% { color: #0ff; text-shadow: 0 0 20px #0ff; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Footer Status */
+footer {
+    text-align: center;
+    margin-top: auto;
     padding: 10px;
-    text-align: left;
-    font-size: 14px;
+    border-top: 1px solid #0ff;
 }
 
-/* AGI Activation */
+#system-status {
+    color: #0ff;
+}
+
 #agi-status {
     color: #ff00ff;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; text-shadow: 0 0 10px #ff00ff; }
 }
