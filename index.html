@@ -22,18 +22,31 @@
       <span class="hud-label">Memory Nodes:</span>
       <span id="memory-nodes">1,024</span>
     </div>
+    <div class="hud-item">
+      <span class="hud-label">Session:</span>
+      <span id="session-id">TRON-AGI-7X2P9</span>
+    </div>
   </div>
   
   <div id="console">
     <div id="output"></div>
     <div id="input-container">
-      <input type="text" id="user-input" placeholder="Direct Input...">
+      <input type="text" id="user-input" placeholder="Direct Input..." autocomplete="off">
       <button id="submit">Execute</button>
+      <button id="save-btn">Save State</button>
     </div>
   </div>
   
   <script>
-    window.onload = initAGISystem;
+    window.onload = function() {
+      initTronEnvironment();
+      window.agi = new SelfLearningAGI();
+      
+      // Load saved state if available
+      if(localStorage.getItem('agiState')) {
+        agi.loadState();
+      }
+    };
   </script>
 </body>
 </html>
