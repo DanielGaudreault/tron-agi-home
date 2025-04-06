@@ -1,19 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TRONA: Web AGI</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron AGI Grid</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            color: #0ff;
+        }
+        
+        #grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        #content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        h1 {
+            color: #0ff;
+            text-align: center;
+            border-bottom: 1px solid #0ff;
+            padding-bottom: 10px;
+        }
+        
+        .neon {
+            animation: flicker 1.5s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+        
+        button {
+            background: transparent;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 10px #0ff;
+        }
+        
+        .ai-response {
+            border-left: 3px solid #0ff;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-  <h1>🧠 TRONA: Self-Aware AGI Grid</h1>
-  <canvas id="gridCanvas" width="640" height="640"></canvas>
-  <div id="console">
-    <input type="text" id="commandInput" placeholder="Talk to TRONA..." />
-    <button onclick="sendCommand()">Send</button>
-    <pre id="response"></pre>
-  </div>
-  <script src="script.js"></script>
+    <canvas id="grid"></canvas>
+    
+    <div id="content">
+        <h1 class="neon">TRON AGI INTERFACE</h1>
+        
+        <p>Welcome to the first client-side AGI implementation. This system runs entirely in your browser with no server required.</p>
+        
+        <div id="chat-area">
+            <div class="ai-response">
+                <p>SYSTEM: Initializing neural network... Ready for interaction.</p>
+            </div>
+        </div>
+        
+        <input type="text" id="user-input" placeholder="Enter your query..." style="width: 70%; padding: 10px; background: #111; border: 1px solid #0ff; color: #0ff;">
+        <button onclick="processInput()">Submit</button>
+        <button onclick="resetAI()">Reset</button>
+        
+        <div id="status">
+            <p>System Status: <span id="status-text">Operational</span></p>
+            <p>Neural Load: <span id="load-text">0%</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Tron Grid Animation
+        const canvas = document.getElementById('grid');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const gridSize = 40;
+        const lines = [];
+        
+        // Initialize grid lines
+        for (let x = 0; x < canvas.width; x += gridSize) {
+            lines.push({
+                x1: x, y1: 0,
+                x2: x, y2: canvas.height,
+                alpha: Math.random() * 0.5 + 0.1
+            });
+        }
+        
+        for (let y = 0; y < canvas.height; y += gridSize) {
+            lines.push({
+                x1: 0, y1: y,
+                x2: canvas.width, y2: y,
+                alpha: Math.random() * 0.5 + 0.1
+            });
+        }
+        
+        // Add some animated lines
+        const animatedLines = [];
+        for (let i = 0; i < 10; i++) {
+            animatedLines.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                length: Math.random() * 100 + 50,
+                angle: Math.random() * Math.PI * 2,
+                speed: Math.random() * 2 + 1,
+                alpha: Math.random() * 0.3 + 0.1
+            });
+        }
+        
+        function animateGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw static grid
+            ctx.strokeStyle = '#0ff';
+            lines.forEach(line => {
+                ctx.globalAlpha = line.alpha;
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+            });
+            
+            // Draw animated lines
+            animatedLines.forEach(line => {
+                ctx.globalAlpha = line.alpha;
+                ctx.beginPath();
+                ctx.moveTo(line.x, line.y);
+                ctx.lineTo(
+                    line.x + Math.cos(line.angle) * line.length,
+                    line.y + Math.sin(line.angle) * line.length
+                );
+                ctx.stroke();
+                
+                // Move the line
+                line.x += Math.cos(line.angle) * line.speed;
+                line.y += Math.sin(line.angle) * line.speed;
+                
+                // Wrap around screen
+                if (line.x < 0) line.x = canvas.width;
+                if (line.x > canvas.width) line.x = 0;
+                if (line.y < 0) line.y = canvas.height;
+                if (line.y > canvas.height) line.y = 0;
+                
+                // Random direction changes
+                if (Math.random() < 0.02) {
+                    line.angle += (Math.random() - 0.5) * 0.5;
+                }
+            });
+            
+            requestAnimationFrame(animateGrid);
+        }
+        
+        animateGrid();
+        
+        // Simple AGI Simulation
+        const knowledgeBase = {
+            greetings: ["Greetings, user.", "Hello, program.", "System ready.", "Access granted."],
+            questions: {
+                "who are you": "I am a client-side AGI implementation running in your browser.",
+                "what is this": "This is a Tron-themed interface demonstrating autonomous functionality without server dependency.",
+                "how does this work": "All processing occurs locally using JavaScript. No data is sent to any server.",
+                "what is agi": "Artificial General Intelligence refers to a machine's ability to understand, learn, and apply knowledge across diverse domains."
+            },
+            fallback: [
+                "Processing... request unclear.",
+                "Elaborate your query, user.",
+                "Syntax not recognized.",
+                "Try rephrasing your input."
+            ]
+        };
+        
+        let conversationHistory = [];
+        
+        function processInput() {
+            const input = document.getElementById('user-input').value.toLowerCase();
+            if (!input) return;
+            
+            // Add user input to chat
+            addToChat(`USER: ${input}`);
+            
+            // Process with simulated "AI"
+            setTimeout(() => {
+                let response = generateResponse(input);
+                addToChat(`SYSTEM: ${response}`);
+                updateStatus();
+            }, 500 + Math.random() * 1000);
+            
+            document.getElementById('user-input').value = '';
+        }
+        
+        function generateResponse(input) {
+            // Simple pattern matching
+            conversationHistory.push(input);
+            
+            if (input.includes('hello') || input.includes('hi')) {
+                return knowledgeBase.greetings[Math.floor(Math.random() * knowledgeBase.greetings.length)];
+            }
+            
+            for (const [question, answer] of Object.entries(knowledgeBase.questions)) {
+                if (input.includes(question)) {
+                    return answer;
+                }
+            }
+            
+            if (input.includes('reset')) {
+                resetAI();
+                return "System reset complete. Memory purged.";
+            }
+            
+            return knowledgeBase.fallback[Math.floor(Math.random() * knowledgeBase.fallback.length)];
+        }
+        
+        function addToChat(message) {
+            const chatArea = document.getElementById('chat-area');
+            const newMessage = document.createElement('div');
+            newMessage.className = message.startsWith('SYSTEM') ? 'ai-response' : 'user-message';
+            newMessage.innerHTML = `<p>${message}</p>`;
+            chatArea.appendChild(newMessage);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        
+        function resetAI() {
+            conversationHistory = [];
+            document.getElementById('chat-area').innerHTML = 
+                '<div class="ai-response"><p>SYSTEM: Neural network reset. Ready for new interaction.</p></div>';
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            const load = Math.min(conversationHistory.length * 5, 100);
+            document.getElementById('load-text').textContent = `${load}%`;
+            document.getElementById('status-text').textContent = 
+                load > 80 ? 'High Load' : load > 50 ? 'Moderate Load' : 'Operational';
+        }
+        
+        // Handle Enter key
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processInput();
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
 </body>
 </html>
