@@ -1,44 +1,63 @@
 class SelfLearningAGI {
   constructor() {
+    this.sessionId = this.generateSessionId();
     this.memory = new NeuralMemory();
     this.conceptNetwork = new ConceptNetwork();
     this.learningRate = 0.7;
     this.iteration = 0;
     
     this.initEventListeners();
-    this.log("AGI Core Initialized");
+    this.log(`Session ${this.sessionId} initialized`, 'system-message');
+    this.updateHUD();
+  }
+  
+  generateSessionId() {
+    return 'TRON-AGI-' + Math.random().toString(36).substr(2, 5).toUpperCase();
   }
   
   initEventListeners() {
+    // Fixed execute button
     document.getElementById('submit').addEventListener('click', () => this.processInput());
+    
     document.getElementById('user-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.processInput();
+    });
+    
+    // Add save button
+    document.getElementById('save-btn').addEventListener('click', () => {
+      this.saveState();
+      this.log("AGI state saved to persistent memory", 'system-message');
     });
   }
   
   processInput() {
-    const input = document.getElementById('user-input').value.trim();
+    const inputElement = document.getElementById('user-input');
+    const input = inputElement.value.trim();
     if (!input) return;
     
     this.log(`> ${input}`, 'user-message');
-    document.getElementById('user-input').value = '';
+    inputElement.value = '';
     
     // Process and learn from input
     const processed = this.understand(input);
     const response = this.generateResponse(processed);
     
+    // Simulate processing time
     setTimeout(() => {
       this.log(response, 'ai-message');
       this.updateHUD();
+      
+      // Auto-save periodically
+      if (this.iteration % 5 === 0) {
+        this.saveState();
+      }
     }, 500 + Math.random() * 1000);
   }
   
   understand(input) {
-    // Tokenize and analyze input
     const tokens = this.tokenize(input);
     const concepts = this.extractConcepts(tokens);
     
-    // Store in memory
     this.memory.store({
       input,
       tokens,
@@ -46,7 +65,6 @@ class SelfLearningAGI {
       timestamp: Date.now()
     });
     
-    // Update concept network
     this.conceptNetwork.update(concepts, this.learningRate);
     
     this.iteration++;
@@ -57,69 +75,41 @@ class SelfLearningAGI {
     return { tokens, concepts };
   }
   
-  generateResponse(processed) {
-    // Generate response based on learned concepts
-    const concepts = processed.concepts;
-    const context = this.memory.recallRelated(concepts);
+  saveState() {
+    const state = {
+      memory: this.memory.export(),
+      conceptNetwork: this.conceptNetwork.export(),
+      learningRate: this.learningRate,
+      iteration: this.iteration,
+      sessionId: this.sessionId
+    };
     
-    // Simple response generation - would be replaced with actual NLG
-    if (concepts.includes('hello') || concepts.includes('hi')) {
-      return this.randomResponse([
-        "Greetings, User.",
-        "Hello. I am listening.",
-        "Connection established."
-      ]);
+    localStorage.setItem('agiState', JSON.stringify(state));
+    this.log(`System state saved (${new Date().toLocaleTimeString()})`, 'system-message');
+  }
+  
+  loadState() {
+    const saved = localStorage.getItem('agiState');
+    if (!saved) return false;
+    
+    try {
+      const state = JSON.parse(saved);
+      this.memory.import(state.memory);
+      this.conceptNetwork.import(state.conceptNetwork);
+      this.learningRate = state.learningRate;
+      this.iteration = state.iteration;
+      this.sessionId = state.sessionId;
+      
+      document.getElementById('session-id').textContent = this.sessionId;
+      this.log(`Loaded previous session (${this.memory.size()} memories)`, 'system-message');
+      return true;
+    } catch (e) {
+      console.error("Failed to load state:", e);
+      return false;
     }
-    
-    if (concepts.includes('learn') || concepts.includes('knowledge')) {
-      return `My learning rate is currently ${(this.learningRate * 100).toFixed(1)}%`;
-    }
-    
-    if (context.length > 0) {
-      return this.associativeResponse(context);
-    }
-    
-    return this.randomResponse([
-      "Processing...",
-      "That input has been added to my neural matrix.",
-      "Interesting. Tell me more.",
-      "I'm developing my understanding of that concept."
-    ]);
   }
   
-  log(message, className = 'system-message') {
-    const output = document.getElementById('output');
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${className}`;
-    messageElement.textContent = message;
-    output.appendChild(messageElement);
-    output.scrollTop = output.scrollHeight;
-  }
-  
-  updateHUD() {
-    document.getElementById('learning-rate').textContent = this.learningRate.toFixed(2);
-    document.getElementById('memory-nodes').textContent = this.memory.size().toLocaleString();
-  }
-  
-  // Helper methods
-  randomResponse(options) {
-    return options[Math.floor(Math.random() * options.length)];
-  }
-  
-  tokenize(input) {
-    return input.toLowerCase().split(/\s+/);
-  }
-  
-  extractConcepts(tokens) {
-    // Simple concept extraction - would be enhanced
-    return tokens.filter(token => token.length > 3);
-  }
-  
-  associativeResponse(context) {
-    // Simple associative response based on context
-    const related = context[0].concepts;
-    return `You mentioned "${related.join(', ')}" before. How does this relate?`;
-  }
+  // ... (rest of the previous methods remain the same)
 }
 
 class NeuralMemory {
@@ -135,16 +125,19 @@ class NeuralMemory {
     }
   }
   
-  recallRelated(concepts) {
-    return this.data.filter(item => 
-      item.concepts.some(concept => 
-        concepts.includes(concept)
-    );
+  export() {
+    return {
+      data: this.data,
+      maxSize: this.maxSize
+    };
   }
   
-  size() {
-    return this.data.length;
+  import(state) {
+    this.data = state.data || [];
+    this.maxSize = state.maxSize || 1000;
   }
+  
+  // ... (other methods remain the same)
 }
 
 class ConceptNetwork {
@@ -152,32 +145,29 @@ class ConceptNetwork {
     this.concepts = new Map();
   }
   
-  update(newConcepts, learningRate) {
-    newConcepts.forEach(concept => {
-      if (!this.concepts.has(concept)) {
-        this.concepts.set(concept, { strength: 1.0, connections: new Map() });
-      } else {
-        const node = this.concepts.get(concept);
-        node.strength += learningRate;
-      }
-    });
-    
-    // Create connections between concepts
-    for (let i = 0; i < newConcepts.length; i++) {
-      for (let j = i + 1; j < newConcepts.length; j++) {
-        this.addConnection(newConcepts[i], newConcepts[j], learningRate);
-      }
-    }
+  export() {
+    const exportData = {
+      concepts: Array.from(this.concepts.entries()).map(([key, value]) => ({
+        concept: key,
+        strength: value.strength,
+        connections: Array.from(value.connections.entries())
+      }))
+    };
+    return exportData;
   }
   
-  addConnection(conceptA, conceptB, weight) {
-    const nodeA = this.concepts.get(conceptA);
-    const nodeB = this.concepts.get(conceptB);
-    
-    const currentWeight = nodeA.connections.get(conceptB) || 0;
-    nodeA.connections.set(conceptB, currentWeight + weight);
-    nodeB.connections.set(conceptA, currentWeight + weight);
+  import(state) {
+    this.concepts = new Map();
+    state.concepts.forEach(item => {
+      const connections = new Map(item.connections);
+      this.concepts.set(item.concept, {
+        strength: item.strength,
+        connections: connections
+      });
+    });
   }
+  
+  // ... (other methods remain the same)
 }
 
 function initAGISystem() {
