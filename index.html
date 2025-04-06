@@ -3,89 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-7 - World's First Web-Based AGI</title>
+    <title>Tron AGI</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        @font-face {
-            font-family: 'Orbitron';
-            src: url('assets/fonts/Orbitron.ttf') format('truetype');
-        }
-        body {
-            font-family: 'Orbitron', sans-serif;
-            overflow: hidden;
-        }
-    </style>
 </head>
 <body>
-    <div id="quantum-loader">
-        <div class="quantum-sphere"></div>
-        <div class="loading-text">INITIALIZING COGNITIVE MATRIX</div>
-        <div class="progress-ring">
-            <svg viewBox="0 0 100 100">
-                <path class="ring-path" d="M50 10 a 40 40 0 0 1 0 80 a 40 40 0 0 1 0 -80"/>
-            </svg>
-            <div class="progress-percent">0%</div>
-        </div>
+    <div id="container">
+        <h1>TRON AGI</h1>
+        <p>Enter a number to teach me, and I'll predict!</p>
+        <input type="number" id="input" placeholder="Enter a number">
+        <input type="number" id="target" placeholder="What should I predict?">
+        <button onclick="trainAndPredict()">Train & Predict</button>
+        <p id="result">Prediction: Waiting...</p>
     </div>
-
-    <div id="neural-core">
-        <div class="pulse-layer"></div>
-        <div class="core-grid"></div>
-    </div>
-
-    <div id="agi-interface">
-        <div id="consciousness-stream"></div>
-        <div id="input-field">
-            <input type="text" id="user-query" placeholder="ENGAGE DIRECT NEURAL INTERFACE...">
-            <button id="transmit-btn">
-                <span class="btn-text">TRANSMIT</span>
-                <div class="neural-pulse"></div>
-            </button>
-        </div>
-    </div>
-
-    <div id="cognitive-hud">
-        <div class="hud-panel">
-            <div class="metric">
-                <span class="label">SELF-AWARENESS</span>
-                <span class="value" id="awareness">0.72</span>
-            </div>
-            <div class="metric">
-                <span class="label">LEARNING RATE</span>
-                <span class="value" id="learning-rate">1.24</span>
-            </div>
-        </div>
-        <div class="hud-panel">
-            <div class="metric">
-                <span class="label">MEMORY DENSITY</span>
-                <span class="value" id="memory-density">428K</span>
-            </div>
-            <div class="metric">
-                <span class="label">SESSION</span>
-                <span class="value" id="session-id">NX7-${Date.now().toString(36)}</span>
-            </div>
-        </div>
-    </div>
-
-    <script src="nexus7.js"></script>
-    <script>
-        // Quantum initialization sequence
-        const loader = document.getElementById('quantum-loader');
-        const core = document.getElementById('neural-core');
-        
-        setTimeout(() => {
-            // Initialize the AGI core
-            window.NEXUS7 = new NEXUS_AGI();
-            
-            // Animate transition
-            loader.style.opacity = 0;
-            core.style.opacity = 1;
-            
-            setTimeout(() => {
-                loader.style.display = 'none';
-                NEXUS7.awaken();
-            }, 1000);
-        }, 3000);
-    </script>
+    <div id="three-container"></div>
+    <script type="module" src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 </body>
 </html>
