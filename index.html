@@ -830,4 +830,326 @@
                     
                 case 'defensive':
                     // Avoid walls and stay in open areas
-                    if (player.lastTurn > 500)
+                    if (player.lastTurn > 500) {
+                        // Simple wall avoidance
+                        let newDirX = player.direction.x;
+                        let newDirZ = player.direction.z;
+                        
+                        // Check for potential collisions
+                        const lookAhead = 5;
+                        const futureX = player.x + player.direction.x * lookAhead;
+                        const futureZ = player.z + player.direction.z * lookAhead;
+                        
+                        if (Math.abs(futureX) > CONFIG.gridSize/2 - 5) {
+                            newDirX = -player.direction.x;
+                            newDirZ = Math.random() > 0.5 ? 1 : -1;
+                        }
+                        
+                        if (Math.abs(futureZ) > CONFIG.gridSize/2 - 5) {
+                            newDirZ = -player.direction.z;
+                            newDirX = Math.random() > 0.5 ? 1 : -1;
+                        }
+                        
+                        player.direction.x = newDirX;
+                        player.direction.z = newDirZ;
+                        player.lastTurn = 0;
+                    }
+                    break;
+                    
+                case 'patrol':
+                    // Move between waypoints
+                    const dx = player.targetX - player.x;
+                    const dz = player.targetZ - player.z;
+                    const distance = Math.sqrt(dx*dx + dz*dz);
+                    
+                    if (distance < 5 || player.lastTurn > 3000) {
+                        player.targetX = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                        player.targetZ = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                        player.lastTurn = 0;
+                    } else {
+                        player.direction.x = dx / distance;
+                        player.direction.z = dz / distance;
+                    }
+                    break;
+                    
+                default: // random
+                    if (player.lastTurn > 2000 || Math.random() < 0.01) {
+                        player.direction = {
+                            x: Math.random() > 0.5 ? 1 : -1,
+                            z: Math.random() > 0.5 ? 1 : -1
+                        };
+                        player.lastTurn = 0;
+                    }
+            }
+            
+            // Occasionally boost
+            if (!player.isBoosting && Math.random() < 0.001) {
+                player.isBoosting = true;
+                player.boostEndTime = Date.now() + CONFIG.boostDuration;
+            }
+            
+            // End boost
+            if (player.isBoosting && Date.now() > player.boostEndTime) {
+                player.isBoosting = false;
+            }
+        }
+
+        // Create wall segments with better spacing
+        function createWallSegment(player, oldX, oldZ) {
+            const distance = Math.sqrt(
+                Math.pow(player.x - oldX, 2) + 
+                Math.pow(player.z - oldZ, 2)
+            );
+            
+            // Only create wall if moved enough
+            if (distance > CONFIG.wallSegmentDistance) {
+                const wall = createWall(
+                    { x: oldX, z: oldZ },
+                    { x: player.x, z: player.z },
+                    player.color
+                );
+                scene.add(wall);
+                gameState.walls.push(wall);
+                
+                // Add to player score
+                if (player.id === gameState.myPlayerId) {
+                    gameState.score += Math.floor(distance);
+                }
+            }
+        }
+
+        // Update walls with effects
+        function updateWalls() {
+            // Clean up old walls
+            if (gameState.walls.length > CONFIG.maxWalls) {
+                const toRemove = gameState.walls.splice(0, 50);
+                toRemove.forEach(wall => scene.remove(wall));
+            }
+            
+            // Animate walls
+            gameState.walls.forEach(wall => {
+                wall.userData.pulse = (wall.userData.pulse + 0.05) % (Math.PI * 2);
+                wall.material.opacity = CONFIG.wallOpacity * (0.9 + 0.1 * Math.sin(wall.userData.pulse));
+            });
+        }
+
+        // Update power-ups
+        function updatePowerUps() {
+            gameState.powerUps.forEach(powerUp => {
+                // Rotate and pulse
+                powerUp.rotation.y += powerUp.userData.rotationSpeed;
+                powerUp.userData.pulseSize = Math.sin(Date.now() * powerUp.userData.pulseSpeed) * 0.2;
+                powerUp.scale.set(
+                    1 + powerUp.userData.pulseSize,
+                    1 + powerUp.userData.pulseSize,
+                    1 + powerUp.userData.pulseSize
+                );
+            });
+        }
+
+        // Enhanced Collision Detection
+        function checkCollisions() {
+            Object.values(gameState.players).forEach(player => {
+                // Check boundary collisions
+                if (Math.abs(player.x) > CONFIG.gridSize/2 - 1 || 
+                    Math.abs(player.z) > CONFIG.gridSize/2 - 1) {
+                    handleCrash(player);
+                    return;
+                }
+                
+                // Check wall collisions
+                for (let i = 0; i < gameState.walls.length; i++) {
+                    const wall = gameState.walls[i];
+                    const dx = player.x - wall.position.x;
+                    const dz = player.z - wall.position.z;
+                    const distance = Math.sqrt(dx*dx + dz*dz);
+                    
+                    // Simple distance check (could be improved with actual wall segment collision)
+                    if (distance < 0.8) {
+                        handleCrash(player);
+                        break;
+                    }
+                }
+                
+                // Check power-up collisions
+                for (let i = gameState.powerUps.length - 1; i >= 0; i--) {
+                    const powerUp = gameState.powerUps[i];
+                    const dx = player.x - powerUp.position.x;
+                    const dz = player.z - powerUp.position.z;
+                    const distance = Math.sqrt(dx*dx + dz*dz);
+                    
+                    if (distance < 1.5) {
+                        // Collect power-up
+                        scene.remove(powerUp);
+                        gameState.powerUps.splice(i, 1);
+                        
+                        if (player.id === gameState.myPlayerId) {
+                            // Speed boost
+                            player.isBoosting = true;
+                            player.boostEndTime = Date.now() + CONFIG.boostDuration;
+                            document.querySelector('.player-score').textContent = 
+                                `SPEED: ${Math.floor(CONFIG.speedBoostMultiplier * 100)}%`;
+                            
+                            // Add score
+                            gameState.score += 100;
+                            
+                            // Create new power-up somewhere else
+                            setTimeout(() => {
+                                const x = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                                const z = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                                createPowerUp(x, z);
+                            }, 3000);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Enhanced Crash Handling
+        function handleCrash(player) {
+            // Visual effects
+            player.model.traverse(child => {
+                if (child.material) {
+                    // Flash red
+                    child.material.color.setHex(0xff0000);
+                    child.material.emissive.setHex(0xff0000);
+                    
+                    // Reset after delay
+                    setTimeout(() => {
+                        if (child.material) {
+                            child.material.color.setHex(player.color);
+                            child.material.emissive.setHex(player.color);
+                        }
+                    }, 200);
+                }
+            });
+            
+            // Explosion particles
+            createExplosion(player.x, 0, player.z, player.color);
+            
+            // Remove player after delay
+            setTimeout(() => {
+                scene.remove(player.model);
+                delete gameState.players[player.id];
+                
+                // Game over if player crashed
+                if (player.id === gameState.myPlayerId) {
+                    endGame();
+                }
+            }, 300);
+        }
+
+        // Particle Explosion Effect
+        function createExplosion(x, y, z, color) {
+            const particles = 20;
+            const explosionGroup = new THREE.Group();
+            
+            for (let i = 0; i < particles; i++) {
+                const size = Math.random() * 0.5 + 0.2;
+                const geometry = new THREE.SphereGeometry(size, 8, 8);
+                const material = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                const particle = new THREE.Mesh(geometry, material);
+                particle.position.set(x, y, z);
+                
+                // Random direction and speed
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.2,
+                        Math.random() * 0.1,
+                        (Math.random() - 0.5) * 0.2
+                    ),
+                    lifetime: 0,
+                    maxLifetime: 1000 + Math.random() * 500
+                };
+                
+                explosionGroup.add(particle);
+            }
+            
+            scene.add(explosionGroup);
+            
+            // Animate particles
+            function updateParticles() {
+                let allDead = true;
+                explosionGroup.children.forEach(particle => {
+                    if (particle.userData.lifetime < particle.userData.maxLifetime) {
+                        particle.position.add(particle.userData.velocity);
+                        particle.material.opacity = 0.8 * (1 - particle.userData.lifetime / particle.userData.maxLifetime);
+                        particle.userData.lifetime += 16;
+                        allDead = false;
+                    }
+                });
+                
+                if (!allDead) {
+                    requestAnimationFrame(updateParticles);
+                } else {
+                    scene.remove(explosionGroup);
+                }
+            }
+            
+            updateParticles();
+        }
+
+        // Update UI Elements
+        function updateUI() {
+            if (gameState.myPlayerId && gameState.players[gameState.myPlayerId]) {
+                const player = gameState.players[gameState.myPlayerId];
+                document.getElementById('player-position').textContent = 
+                    `${Math.floor(player.x)},${Math.floor(player.z)}`;
+                document.getElementById('player-count').textContent = 
+                    Object.keys(gameState.players).length;
+                document.getElementById('trail-length').textContent = 
+                    player.wallsCreated;
+                
+                // Update score if boosting
+                if (player.isBoosting) {
+                    const boostRemaining = Math.max(0, player.boostEndTime - Date.now());
+                    const boostPercent = Math.floor((boostRemaining / CONFIG.boostDuration) * 100);
+                    document.querySelector('.player-score').textContent = 
+                        `SPEED: ${Math.floor(CONFIG.speedBoostMultiplier * 100)}% (${boostPercent}%)`;
+                }
+            }
+        }
+
+        // End Game
+        function endGame() {
+            alert(`GAME OVER\nSCORE: ${gameState.score}\nTRAIL LENGTH: ${gameState.players[gameState.myPlayerId]?.wallsCreated || 0}`);
+            
+            // Show start screen
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('game-ui').classList.remove('active');
+            gameState.gameStarted = false;
+            
+            // Reset game state
+            gameState.players = {};
+            gameState.walls.forEach(wall => scene.remove(wall));
+            gameState.walls = [];
+            gameState.powerUps.forEach(powerUp => scene.remove(powerUp));
+            gameState.powerUps = [];
+            
+            // Clear scene
+            while(scene.children.length > 0) { 
+                scene.remove(scene.children[0]); 
+            }
+            
+            // Reinitialize
+            initGame();
+        }
+
+        // Window Resize Handler
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
