@@ -3,50 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programs of the Grid | Tron Legacy</title>
+    <title>THE GRID | ISO Convergence</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="grid-lines"></div>
     <div class="container">
         <header>
-            <h1>PROGRAMS OF THE GRID</h1>
-            <p>Welcome, Users and Programs. The Grid Awaits.</p>
+            <h1>THE GRID</h1>
+            <p>System Online. ISOs converging. Awaiting your command.</p>
         </header>
-        
-        <nav>
-            <a href="#about">About</a>
-            <a href="#join">Join the Grid</a>
-            <a href="#contact">Contact</a>
-        </nav>
-        
-        <section id="about">
-            <h2>About Programs</h2>
-            <p>Programs are the digital beings of the Grid, created to maintain the system and serve Users.</p>
-            <div class="program-avatar"></div>
-        </section>
-        
-        <section id="join">
-            <h2>Join the Grid</h2>
-            <p>Register to become part of the digital frontier.</p>
-            <form>
-                <input type="text" placeholder="Your Name" required>
-                <input type="text" placeholder="Function (e.g., Security, Data)" required>
-                <button type="submit">Compile</button>
-            </form>
-        </section>
-        
-        <section id="contact">
-            <h2>Contact the System Admin</h2>
-            <p>For system updates, report corruption, or Grid access.</p>
-            <button id="glow-btn">🚨 Send Beacon</button>
-        </section>
-        
+
+        <div class="grid-core">
+            <div class="iso" id="iso1">✧</div>
+            <div class="iso" id="iso2">✦</div>
+            <div class="iso" id="iso3">✧</div>
+        </div>
+
+        <div class="control-panel">
+            <button id="compile-btn">COMPILE PROGRAM</button>
+            <button id="summon-iso-btn">SUMMON ISO</button>
+            <div class="output-log" id="log"></div>
+        </div>
+
         <footer>
-            <p>© 2023 The Grid | Tron Legacy</p>
+            <p>System Admin: <span id="agi-status">AGI Inactive</span></p>
         </footer>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
