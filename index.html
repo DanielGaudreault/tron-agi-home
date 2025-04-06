@@ -1,21 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON Grid</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div id="grid-container"></div>
-    <div id="iso-container"></div>
-    <div id="agi-interface">
-        <h1>TRON AGI</h1>
-        <div id="chat-output">Initializing...</div>
-        <input type="text" id="chat-input" placeholder="Enter command">
-        <button onclick="sendCommand()">Send</button>
-    </div>
-    <script src="three.min.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    font-family: 'Eurostile', sans-serif; /* Replace with your tron-font.ttf */
+    overflow: hidden;
+}
+
+#grid-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+#iso-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#agi-interface {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 300px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00FFFF;
+    box-shadow: 0 0 10px #00FFFF;
+    color: #00FFFF;
+    z-index: 10;
+}
+
+#chat-output {
+    height: 100px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border: 1px solid #00FFFF;
+    padding: 5px;
+}
+
+#chat-input {
+    width: 70%;
+    background: #000;
+    border: 1px solid #00FFFF;
+    color: #00FFFF;
+    padding: 5px;
+}
+
+button {
+    background: #00FFFF;
+    color: #000;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    box-shadow: 0 0 5px #00FFFF;
+}
