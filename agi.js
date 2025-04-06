@@ -252,3 +252,107 @@ class SelfLearningAGI {
         this.logMessage('system', message);
     }
     
+    showNotification(message, duration = 3000) {
+        const notification = document.getElementById('system-notification');
+        notification.textContent = message;
+        notification.style.opacity = '1';
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+        }, duration);
+    }
+    
+    updateSystemState() {
+        this.coreTemperature = Math.max(35, this.coreTemperature - 0.02);
+        this.systemHealth = Math.min(100, this.systemHealth + 0.01);
+    }
+    
+    startSystemMonitor() {
+        setInterval(() => {
+            this.updateSystemState();
+            this.updateHUD();
+        }, 5000);
+    }
+    
+    updateHUD() {
+        document.getElementById('core-integrity').textContent = `${Math.floor(this.systemHealth)}%`;
+        document.getElementById('core-temp').textContent = `${this.coreTemperature.toFixed(1)}°C`;
+        document.getElementById('integrity-bar').style.width = `${this.systemHealth}%`;
+        document.getElementById('temp-bar').style.width = `${Math.min(100, (this.coreTemperature - 35) * 20)}%`;
+        
+        document.getElementById('neural-nodes').textContent = this.conceptNetwork.nodeCount().toLocaleString();
+        document.getElementById('neural-connections').textContent = this.conceptNetwork.connectionCount().toLocaleString();
+        document.getElementById('learning-rate').textContent = this.learningRate.toFixed(2);
+        
+        const memoryUsage = Math.min(100, Math.floor(this.memory.size() / 10));
+        document.getElementById('memory-usage').textContent = `${memoryUsage}%`;
+        document.getElementById('memory-bar').style.width = `${memoryUsage}%`;
+        
+        document.getElementById('session-id').textContent = this.sessionId;
+    }
+    
+    generateSessionId() {
+        return 'TRON-AGI-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    }
+    
+    saveState() {
+        const state = {
+            memory: this.memory.export(),
+            conceptNetwork: this.conceptNetwork.export(),
+            learningRate: this.learningRate,
+            iteration: this.iteration,
+            sessionId: this.sessionId,
+            systemHealth: this.systemHealth,
+            coreTemperature: this.coreTemperature
+        };
+        
+        try {
+            localStorage.setItem('agiState', JSON.stringify(state));
+            return true;
+        } catch (e) {
+            console.error("Save failed:", e);
+            return false;
+        }
+    }
+    
+    loadState() {
+        try {
+            const saved = localStorage.getItem('agiState');
+            if (!saved) return false;
+            
+            const state = JSON.parse(saved);
+            
+            this.memory.import(state.memory || {});
+            this.conceptNetwork.import(state.conceptNetwork || {});
+            this.learningRate = state.learningRate || 0.8;
+            this.iteration = state.iteration || 0;
+            this.sessionId = state.sessionId || this.generateSessionId();
+            this.systemHealth = state.systemHealth || 100;
+            this.coreTemperature = state.coreTemperature || 36.5;
+            
+            return true;
+        } catch (e) {
+            console.error("Load failed:", e);
+            return false;
+        }
+    }
+}
+
+class NeuralMemory {
+    constructor() {
+        this.memories = [];
+        this.conceptIndex = new Map();
+        this.maxSize = 1000;
+    }
+    
+    store(memory) {
+        this.memories.push(memory);
+        
+        memory.concepts.forEach(concept => {
+            if (!this.conceptIndex.has(concept)) {
+                this.conceptIndex.set(concept, []);
+            }
+            this.conceptIndex.get(concept).push(this.memories.length - 1);
+        });
+        
+        if
