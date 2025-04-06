@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON: The Grid</title>
+    <title>TRON: City of the Grid</title>
     <style>
         body {
             margin: 0;
@@ -11,15 +11,16 @@
             background: #000;
             overflow: hidden;
             font-family: 'TronFont', monospace;
+            color: #00FFFF;
+            text-shadow: 0 0 5px #00FFFF;
         }
 
-        /* Inline Tron-like font (base64 encoded Eurostile-like substitute) */
         @font-face {
             font-family: 'TronFont';
             src: url('data:font/truetype;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SAYwAAAC8AAAAYGNtYXDf7xriAAABHAAAAFJjdnQgAAIAAAD8AAAAcGlybAAAAAAAANgAAADxhbm1lG1Q8gUcAAAFsAAABPGZvbnQAZQBuAHQAcgB5AAAATAAAACBmcGdtAAAGAAAAABwAAAA4Z2x5ZgAAA+gAAAHUAAAACGhlYWQAAAADAAAAOgAAADZoaGVhAAAD6AAAAAwAAAAQaG10eAAAAAQAAAAIAAAACGxvY2EAAAPoAAAADAAAAAxsb2NhAAAD6AAAAAwAAAAQbWF4cAAAAAQAAAAgAAAAIAABAABtbmFtZQAAAFAAAABQAAAACG9zdAAAABAAAAAQAAAAGAAAAABQcm9vZgAAAAMAAAADAAAACAAAAAQA') format('truetype');
         }
 
-        #grid-canvas {
+        #city-canvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -31,32 +32,31 @@
             position: fixed;
             bottom: 20px;
             left: 20px;
-            width: 350px;
+            width: 400px;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF, 0 0 30px #00FFFF;
-            color: #00FFFF;
-            text-shadow: 0 0 5px #00FFFF;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
             z-index: 10;
         }
 
         #chat-output {
-            height: 120px;
+            height: 150px;
             overflow-y: auto;
             margin-bottom: 10px;
-            border: 1px solid #00FFFF;
-            padding: 5px;
+            border: 2px solid #00FFFF;
+            padding: 10px;
             font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
         }
 
         #chat-input {
             width: 70%;
             background: #000;
-            border: 1px solid #00FFFF;
+            border: 2px solid #00FFFF;
             color: #00FFFF;
             padding: 5px;
-            box-shadow: 0 0 5px #00FFFF;
+            box-shadow: 0 0 10px #00FFFF;
         }
 
         button {
@@ -65,55 +65,43 @@
             border: none;
             padding: 5px 15px;
             cursor: pointer;
-            box-shadow: 0 0 5px #00FFFF;
-        }
-
-        button:hover {
             box-shadow: 0 0 10px #00FFFF;
         }
 
-        .iso {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #00FFFF;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
-            pointer-events: none;
+        button:hover {
+            box-shadow: 0 0 20px #00FFFF;
         }
 
-        .cycle {
+        .iso, .cycle, .disc {
             position: absolute;
-            width: 20px;
-            height: 10px;
-            background: #FF4500;
-            box-shadow: 0 0 20px #FF4500, 0 0 40px #FF4500;
             pointer-events: none;
+            transition: all 0.1s ease;
         }
     </style>
 </head>
 <body>
-    <canvas id="grid-canvas"></canvas>
+    <canvas id="city-canvas"></canvas>
     <div id="agi-interface">
-        <h1>TRON AGI</h1>
-        <div id="chat-output">Initializing Grid... [SYSTEM ONLINE]</div>
-        <input type="text" id="chat-input" placeholder="Enter command">
-        <button onclick="sendCommand()">Send</button>
+        <h1>TRON MCP</h1>
+        <div id="chat-output">Initializing Tron City... [GRID ACTIVE]</div>
+        <input type="text" id="chat-input" placeholder="Enter directive">
+        <button onclick="sendCommand()">Execute</button>
     </div>
 
     <script>
-        // Grid Canvas Setup
-        const canvas = document.getElementById('grid-canvas');
+        // Canvas Setup
+        const canvas = document.getElementById('city-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Draw Tron Grid
-        function drawGrid() {
+        // Tron Cityscape
+        function drawCity() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
-            ctx.lineWidth = 1;
 
+            // Grid
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
             for (let x = 0; x < canvas.width; x += 50) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
@@ -126,27 +114,48 @@
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
             }
+
+            // Skyscrapers
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.strokeStyle = '#00FFFF';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * canvas.width;
+                const height = 100 + Math.random() * 200;
+                const width = 30 + Math.random() * 50;
+                ctx.fillRect(x, canvas.height - height, width, height);
+                ctx.strokeRect(x, canvas.height - height, width, height);
+            }
         }
 
-        // ISOs and Light Cycles
+        // Entities (ISOs, Cycles, Discs)
         const entities = [];
         function createEntity(type) {
             const entity = document.createElement('div');
             entity.className = type;
-            entity.style.left = Math.random() * (window.innerWidth - 20) + 'px';
-            entity.style.top = Math.random() * (window.innerHeight - 20) + 'px';
+            let html = '';
+            if (type === 'iso') {
+                html = `<svg width="15" height="15"><circle cx="7.5" cy="7.5" r="7" fill="#00FFFF" style="filter: drop-shadow(0 0 10px #00FFFF);"/></svg>`;
+            } else if (type === 'cycle') {
+                html = `<svg width="25" height="15"><rect x="0" y="0" width="25" height="15" fill="#FF4500" style="filter: drop-shadow(0 0 10px #FF4500);"/></svg>`;
+            } else if (type === 'disc') {
+                html = `<svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="#00FFFF" stroke-width="2" style="filter: drop-shadow(0 0 10px #00FFFF);"/></svg>`;
+            }
+            entity.innerHTML = html;
+            entity.style.left = Math.random() * (window.innerWidth - 25) + 'px';
+            entity.style.top = Math.random() * (window.innerHeight - 25) + 'px';
             document.body.appendChild(entity);
 
-            const speedX = (Math.random() - 0.5) * 4;
-            const speedY = (Math.random() - 0.5) * 4;
-            entities.push({ element: entity, speedX, speedY, type });
+            const speedX = (Math.random() - 0.5) * 5;
+            const speedY = (Math.random() - 0.5) * 5;
+            entities.push({ element: entity, speedX, speedY, type, trail: [] });
         }
 
         // Spawn Entities
-        for (let i = 0; i < 5; i++) createEntity('iso');
-        for (let i = 0; i < 3; i++) createEntity('cycle');
+        for (let i = 0; i < 6; i++) createEntity('iso');
+        for (let i = 0; i; i++) createEntity('cycle');
+        for (let i = 0; i < 4; i++) createEntity('disc');
 
-        // Animate Entities
+        // Animate Entities with Trails
         function animateEntities() {
             entities.forEach(entity => {
                 let x = parseFloat(entity.element.style.left);
@@ -155,57 +164,79 @@
                 x += entity.speedX;
                 y += entity.speedY;
 
-                if (x < 0 || x > window.innerWidth - (entity.type === 'cycle' ? 20 : 10)) entity.speedX *= -1;
-                if (y < 0 || y > window.innerHeight - 10) entity.speedY *= -1;
+                if (x < 0 || x > window.innerWidth - 25) entity.speedX *= -1;
+                if (y < 0 || y > window.innerHeight - 25) entity.speedY *= -1;
 
                 entity.element.style.left = x + 'px';
                 entity.element.style.top = y + 'px';
 
-                // Light trail effect (simulated with shadow)
-                entity.element.style.boxShadow = `0 0 20px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'}, 0 0 40px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'}`;
+                // Add trail
+                entity.trail.push({ x, y });
+                if (entity.trail.length > 10) entity.trail.shift();
+                entity.element.style.filter = `drop-shadow(0 0 10px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'})`;
             });
             requestAnimationFrame(animateEntities);
         }
 
-        // AGI Chat Interface
+        // AGI with Memory and Personality
         const chatOutput = document.getElementById('chat-output');
         const chatInput = document.getElementById('chat-input');
+        let memory = { isos: 6, cycles: 4, discs: 4, user: "Unknown" };
 
         function sendCommand() {
             const input = chatInput.value.trim();
             if (!input) return;
 
             chatOutput.innerHTML += `<p>User: ${input}</p>`;
-            let response = "Processing...";
+            let response = "";
 
-            if (input.toLowerCase().includes("iso")) {
-                response = `ISOs detected: ${entities.filter(e => e.type === 'iso').length} active entities.`;
-            } else if (input.toLowerCase().includes("cycle")) {
-                response = `Light Cycles online: ${entities.filter(e => e.type === 'cycle').length}.`;
-            } else if (input.toLowerCase().includes("grid")) {
-                response = "Grid status: Fully operational. Coordinates locked.";
-            } else if (input.toLowerCase().includes("tron")) {
-                response = "Welcome to the Grid, User. I am your MCP interface. How may I serve?";
-            } else if (input.toLowerCase().includes("derezz")) {
-                response = "[ALERT] Initiating derezz sequence... Stand by.";
+            const lowerInput = input.toLowerCase();
+            if (lowerInput.includes("who am i")) {
+                response = `You are ${memory.user}, a User on the Grid. Identity confirmed.`;
+            } else if (lowerInput.includes("name me")) {
+                memory.user = input.split("name me")[1]?.trim() || "User_" + Math.floor(Math.random() * 1000);
+                response = `Identity updated. You are now ${memory.user}.`;
+            } else if (lowerInput.includes("iso")) {
+                response = `ISOs active: ${memory.isos}. They are self-evolving programs, beyond my control.`;
+            } else if (lowerInput.includes("cycle")) {
+                response = `Light Cycles operational: ${memory.cycles}. Speed and precision unmatched.`;
+            } else if (lowerInput.includes("disc")) {
+                response = `Identity Discs deployed: ${memory.discs}. Weapons and data synced.`;
+            } else if (lowerInput.includes("city")) {
+                response = "Tron City: A digital metropolis. Population: Infinite. Status: Eternal.";
+            } else if (lowerInput.includes("tron")) {
+                response = "I am the MCP, overseer of the Grid. State your purpose, User.";
+            } else if (lowerInput.includes("derezz")) {
+                memory.isos = Math.max(0, memory.isos - 1);
+                response = `[ALERT] Derezzing ISO... Remaining: ${memory.isos}.`;
+            } else if (lowerInput.includes("help")) {
+                response = "Directives: 'Who am I', 'Name me [name]', 'ISO status', 'Cycle status', 'Disc status', 'City info', 'Tron', 'Derezz'.";
             } else {
-                response = "Command not recognized. Try 'ISO status', 'Cycle check', 'Grid status', or 'Tron'.";
+                response = "Unrecognized directive. I am the MCP—clarify your intent, or be derezzed.";
             }
 
-            chatOutput.innerHTML += `<p>AGI: ${response}</p>`;
+            chatOutput.innerHTML += `<p>MCP: ${response}</p>`;
             chatOutput.scrollTop = chatOutput.scrollHeight;
             chatInput.value = "";
+
+            // Proactive MCP
+            if (Math.random() < 0.2) {
+                setTimeout(() => {
+                    chatOutput.innerHTML += `<p>MCP: Grid stability at 98%. Monitoring ${memory.user}'s actions.</p>`;
+                    chatOutput.scrollTop = chatOutput.scrollHeight;
+                }, 2000);
+            }
         }
 
         // Initialize
-        drawGrid();
+        drawCity();
         animateEntities();
 
         // Resize Handling
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            drawGrid();
+            drawCity();
         });
 
         // Enter key for chat
