@@ -3,161 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON AGI Core v3.1</title>
+    <title>TRON AGI</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <style>
-        @font-face {
-            font-family: 'Orbitron';
-            src: url('assets/fonts/Orbitron.ttf') format('truetype');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Orbitron', sans-serif;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-grid">
-            <div class="grid-line vertical"></div>
-            <div class="grid-line horizontal"></div>
-            <div class="center-dot"></div>
-            <div class="loading-text">INITIALIZING</div>
-            <div class="progress-container">
-                <div class="progress-bar"></div>
-                <div class="progress-text">0%</div>
-            </div>
-            <div class="version">SYSTEM v3.1</div>
-        </div>
+        <div class="loader">LOADING...</div>
     </div>
 
-    <!-- Main Container -->
-    <div id="tron-container"></div>
-
-    <!-- System HUD -->
-    <div id="system-hud">
-        <div class="hud-panel core-status">
-            <div class="panel-header">CORE STATUS</div>
+    <div id="app-container">
+        <div id="hud">
             <div class="hud-item">
-                <div class="hud-label">INTEGRITY</div>
-                <div class="hud-value" id="core-integrity">100%</div>
-                <div class="hud-bar">
-                    <div class="bar-fill" id="integrity-bar"></div>
-                </div>
+                <span>SYSTEM STATUS:</span>
+                <span id="system-status">ONLINE</span>
             </div>
             <div class="hud-item">
-                <div class="hud-label">TEMPERATURE</div>
-                <div class="hud-value" id="core-temp">36.5°C</div>
-                <div class="hud-bar">
-                    <div class="bar-fill" id="temp-bar"></div>
-                </div>
+                <span>LEARNING RATE:</span>
+                <span id="learning-rate">0.85</span>
             </div>
         </div>
 
-        <div class="hud-panel neural-network">
-            <div class="panel-header">NEURAL MATRIX</div>
-            <div class="hud-item">
-                <div class="hud-label">NODES</div>
-                <div class="hud-value" id="neural-nodes">1,024</div>
-            </div>
-            <div class="hud-item">
-                <div class="hud-label">CONNECTIONS</div>
-                <div class="hud-value" id="neural-connections">15,360</div>
-            </div>
-            <div class="hud-item">
-                <div class="hud-label">LEARNING RATE</div>
-                <div class="hud-value" id="learning-rate">0.85</div>
-            </div>
-        </div>
-
-        <div class="hud-panel memory-core">
-            <div class="panel-header">MEMORY CORE</div>
-            <div class="hud-item">
-                <div class="hud-label">STORAGE</div>
-                <div class="hud-value" id="memory-usage">42%</div>
-                <div class="hud-bar">
-                    <div class="bar-fill" id="memory-bar"></div>
-                </div>
-            </div>
-            <div class="hud-item">
-                <div class="hud-label">SESSION ID</div>
-                <div class="hud-value" id="session-id">TRON-AGI-7X2P9</div>
+        <div id="console">
+            <div id="output"></div>
+            <div id="input-container">
+                <input type="text" id="user-input" placeholder="ENTER COMMAND...">
+                <button id="submit">EXECUTE</button>
             </div>
         </div>
     </div>
 
-    <!-- Main Console -->
-    <div id="main-console">
-        <div class="console-header">
-            <div class="console-tabs">
-                <div class="tab active" data-tab="main">MAINFRAME</div>
-                <div class="tab" data-tab="memory">MEMORY ACCESS</div>
-                <div class="tab" data-tab="network">NEURAL VISUALIZER</div>
-            </div>
-            <div class="console-controls">
-                <button id="save-btn" class="control-btn">
-                    <span class="btn-icon">💾</span>
-                    <span class="btn-text">SAVE STATE</span>
-                </button>
-                <button id="voice-btn" class="control-btn">
-                    <span class="btn-icon">🎤</span>
-                    <span class="btn-text">VOICE INPUT</span>
-                </button>
-            </div>
-        </div>
-        <div class="console-body">
-            <div id="console-output"></div>
-            <div class="input-container">
-                <input type="text" id="user-input" placeholder="ENTER DIRECT INPUT..." autocomplete="off">
-                <button id="submit-btn" class="submit-btn">
-                    <span>EXECUTE</span>
-                    <div class="btn-pulse"></div>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Notification -->
-    <div id="system-notification"></div>
-
-    <!-- Scripts -->
-    <script src="three-tron.js"></script>
-    <script src="agi.js"></script>
+    <script src="script.js"></script>
     <script>
-        // Initialize system with loading simulation
-        let loadingProgress = 0;
-        const loadingInterval = setInterval(() => {
-            loadingProgress += Math.random() * 15;
-            if (loadingProgress >= 100) {
-                loadingProgress = 100;
-                clearInterval(loadingInterval);
-                
-                // Initialize systems
-                try {
-                    initTronEnvironment();
-                    window.agi = new SelfLearningAGI();
-                    
-                    // Hide loading screen
-                    setTimeout(() => {
-                        document.getElementById('loading-screen').style.opacity = '0';
-                        setTimeout(() => {
-                            document.getElementById('loading-screen').style.display = 'none';
-                        }, 1000);
-                    }, 500);
-                } catch (error) {
-                    console.error("Initialization error:", error);
-                    document.getElementById('loading-screen').innerHTML = `
-                        <div class="error-screen">
-                            <div class="error-code">SYSTEM ERROR 0x${Math.floor(Math.random() * 10000).toString(16)}</div>
-                            <div class="error-message">Initialization failed</div>
-                            <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
-                        </div>
-                    `;
-                }
-            }
-            
-            document.querySelector('.progress-bar').style.width = loadingProgress + '%';
-            document.querySelector('.progress-text').textContent = Math.floor(loadingProgress) + '%';
-        }, 200);
+        // Simple loading simulation
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                initAGISystem();
+            }, 500);
+        }, 1500);
     </script>
 </body>
 </html>
