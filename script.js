@@ -190,6 +190,13 @@ function initGame() {
     // Start button
     document.getElementById('start-button').addEventListener('click', startGame);
     
+    // Also allow Enter key to start
+    document.getElementById('player-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            startGame();
+        }
+    });
+    
     // Keyboard controls
     window.addEventListener('keydown', (e) => {
         gameState.keys[e.code] = true;
@@ -206,8 +213,10 @@ function initGame() {
 
 // Start Game
 function startGame() {
-    const playerName = document.getElementById('player-name').value || 'Player';
+    const playerName = document.getElementById('player-name').value.trim() || 'Player';
     document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-ui').style.display = 'block';
+    document.querySelector('.player-name').textContent = playerName.toUpperCase();
     
     // Create player
     gameState.myPlayerId = 'player-' + Math.random().toString(36).substr(2, 9);
@@ -269,10 +278,10 @@ function animate() {
         // Update UI
         if (gameState.myPlayerId && gameState.players[gameState.myPlayerId]) {
             const player = gameState.players[gameState.myPlayerId];
-            document.getElementById('position').textContent = 
-                `Position: (${player.x.toFixed(1)}, ${player.z.toFixed(1)})`;
-            document.getElementById('score').textContent = 
-                `Players: ${Object.keys(gameState.players).length}`;
+            document.getElementById('player-position').textContent = 
+                `${Math.floor(player.x)},${Math.floor(player.z)}`;
+            document.getElementById('player-count').textContent = 
+                Object.keys(gameState.players).length;
         }
     }
     
@@ -372,8 +381,6 @@ function checkCollisions() {
 }
 
 function handleCrash(player) {
-    console.log(`${player.name} crashed!`);
-    
     // Visual effect
     player.model.traverse(child => {
         if (child.material) {
@@ -388,9 +395,15 @@ function handleCrash(player) {
         
         // Game over if player crashed
         if (player.id === gameState.myPlayerId) {
-            alert("Game Over! You crashed.");
+            alert("GAME OVER\nYou crashed into a wall!");
             document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('game-ui').style.display = 'none';
             gameState.gameStarted = false;
+            
+            // Reset game state
+            gameState.players = {};
+            gameState.walls.forEach(wall => scene.remove(wall));
+            gameState.walls = [];
         }
     }, 500);
 }
