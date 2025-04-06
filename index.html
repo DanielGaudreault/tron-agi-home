@@ -3,28 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON CITY 3D</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>TRON Grid</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="info">TRON GRID CITY | WASD to move | Click to summon ISO</div>
-    <div id="hud">
-        <div class="hud-element">
-            <span>PROGRAMS:</span>
-            <span id="program-count">0</span>
-        </div>
-        <div class="hud-element">
-            <span>ISOS:</span>
-            <span id="iso-count">0</span>
-        </div>
-        <div class="hud-element">
-            <span>POWER:</span>
-            <span id="power-level">100%</span>
-        </div>
+    <div id="grid-container"></div>
+    <div id="iso-container"></div>
+    <div id="agi-interface">
+        <h1>TRON AGI</h1>
+        <div id="chat-output">Initializing...</div>
+        <input type="text" id="chat-input" placeholder="Enter command">
+        <button onclick="sendCommand()">Send</button>
     </div>
-    <script src="js/three.min.js"></script>
-    <script src="js/OrbitControls.js"></script>
+    <script src="three.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
