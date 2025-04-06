@@ -18,13 +18,7 @@
             color: #00ffff;
             overflow: hidden;
             height: 100vh;
-        }
-
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* === START SCREEN === */
@@ -40,6 +34,7 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            user-select: none;
         }
 
         .title-container {
@@ -55,6 +50,29 @@
             color: #00ffff;
             text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff;
             margin-bottom: 20px;
+            position: relative;
+        }
+
+        .title-glitch::before, .title-glitch::after {
+            content: "TRON";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .title-glitch::before {
+            color: #ff00ff;
+            z-index: -1;
+            animation: glitch-effect 3s infinite;
+        }
+
+        .title-glitch::after {
+            color: #ffff00;
+            z-index: -2;
+            animation: glitch-effect 2s infinite reverse;
         }
 
         .subtitle {
@@ -125,6 +143,7 @@
             opacity: 0;
             transition: opacity 1s;
             pointer-events: none;
+            user-select: none;
         }
 
         #game-ui.active {
@@ -173,11 +192,53 @@
             color: rgba(0, 255, 255, 0.7);
         }
 
+        /* === MOBILE CONTROLS === */
+        #mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+            z-index: 20;
+        }
+
+        .mobile-btn {
+            background: rgba(0, 100, 200, 0.3);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            touch-action: manipulation;
+        }
+
+        .mobile-btn:active {
+            background: rgba(0, 200, 255, 0.5);
+        }
+
+        #up-btn { grid-column: 2; grid-row: 1; }
+        #left-btn { grid-column: 1; grid-row: 2; }
+        #down-btn { grid-column: 2; grid-row: 3; }
+        #right-btn { grid-column: 3; grid-row: 2; }
+
         /* === ANIMATIONS === */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-15px); }
             100% { transform: translateY(0px); }
+        }
+
+        @keyframes glitch-effect {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
         }
 
         /* === RESPONSIVE DESIGN === */
@@ -205,6 +266,10 @@
             .player-info, .game-stats {
                 padding: 10px;
             }
+
+            #mobile-controls {
+                display: grid;
+            }
         }
     </style>
 </head>
@@ -212,7 +277,7 @@
     <div id="start-screen">
         <div class="title-container">
             <h1 class="title-glitch">TRON</h1>
-            <h2 class="subtitle">LIGHT CYCLE ARENA</h2>
+            <h2 class="subtitle">GRID REVOLUTION</h2>
         </div>
         <div class="form-container">
             <input type="text" id="player-name" placeholder="ENTER USERNAME" maxlength="12">
@@ -228,25 +293,38 @@
         <div class="game-stats">
             <div class="stat"><span>PLAYERS:</span> <span id="player-count">1</span></div>
             <div class="stat"><span>POSITION:</span> <span id="player-position">0,0</span></div>
+            <div class="stat"><span>TRAIL LENGTH:</span> <span id="trail-length">0</span></div>
         </div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="mobile-btn" id="up-btn">↑</div>
+        <div class="mobile-btn" id="left-btn">←</div>
+        <div class="mobile-btn" id="down-btn">↓</div>
+        <div class="mobile-btn" id="right-btn">→</div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script>
-        // Game Configuration
+        // Enhanced Game Configuration
         const CONFIG = {
-            gridSize: 100,
+            gridSize: 120,
             cellSize: 2,
             gridColor: 0x003300,
             lightColor: 0x00ffff,
-            buildingColors: [0x111122, 0x112211, 0x221111],
+            buildingColors: [0x111122, 0x112211, 0x221111, 0x121212],
             playerColors: [0x00ffff, 0xff00ff, 0xffff00, 0xff8800],
-            moveSpeed: 0.1,
-            wallHeight: 2,
-            wallOpacity: 0.8,
-            fov: 75,
-            cameraDistance: 30,
-            cameraHeight: 15
+            moveSpeed: 0.15,
+            wallHeight: 2.5,
+            wallOpacity: 0.85,
+            fov: 80,
+            cameraDistance: 35,
+            cameraHeight: 20,
+            maxWalls: 300,
+            wallSegmentDistance: 0.5,
+            aiTurnFrequency: 120,
+            speedBoostMultiplier: 1.5,
+            boostDuration: 3000
         };
 
         // Game State
@@ -254,95 +332,129 @@
             players: {},
             walls: [],
             buildings: [],
+            powerUps: [],
             myPlayerId: null,
             gameStarted: false,
-            keys: {}
+            keys: {},
+            lastTime: 0,
+            isMobile: /Mobi|Android/i.test(navigator.userAgent),
+            score: 0
         };
 
         // Three.js Setup
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000011);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const camera = new THREE.PerspectiveCamera(
+            CONFIG.fov, 
+            window.innerWidth / window.innerHeight, 
+            0.1, 
+            1000
+        );
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            powerPreference: "high-performance"
+        });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Lighting
+        // Enhanced Lighting
         const ambientLight = new THREE.AmbientLight(0x222222);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0x00ffff, 1);
-        directionalLight.position.set(1, 1, 1);
+        const directionalLight = new THREE.DirectionalLight(0x00ffff, 1.2);
+        directionalLight.position.set(1, 2, 1);
         directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
         scene.add(directionalLight);
 
-        // Create Grid
+        // Grid Helper Function
         function createGrid() {
             const grid = new THREE.Group();
             
-            // Ground plane
+            // Ground plane with better material
             const groundGeometry = new THREE.PlaneGeometry(
                 CONFIG.gridSize * CONFIG.cellSize, 
-                CONFIG.gridSize * CONFIG.cellSize
+                CONFIG.gridSize * CONFIG.cellSize,
+                CONFIG.gridSize,
+                CONFIG.gridSize
             );
+            
             const groundMaterial = new THREE.MeshPhongMaterial({ 
                 color: CONFIG.gridColor,
                 emissive: 0x001100,
-                side: THREE.DoubleSide
+                emissiveIntensity: 0.5,
+                side: THREE.DoubleSide,
+                shininess: 100
             });
+            
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             grid.add(ground);
             
-            // Grid lines
+            // Grid lines with glow effect
             const gridHelper = new THREE.GridHelper(
                 CONFIG.gridSize * CONFIG.cellSize,
                 CONFIG.gridSize,
                 CONFIG.lightColor,
-                CONFIG.lightColor
+                new THREE.Color(CONFIG.lightColor).multiplyScalar(0.7)
             );
             gridHelper.position.y = 0.1;
             grid.add(gridHelper);
             
+            // Add subtle grid pulse animation
+            let pulseIntensity = 0;
+            function animateGrid() {
+                pulseIntensity = 0.2 * Math.sin(Date.now() * 0.001) + 0.8;
+                gridHelper.material.opacity = pulseIntensity * 0.6;
+                requestAnimationFrame(animateGrid);
+            }
+            animateGrid();
+            
             return grid;
         }
 
-        // Create Buildings
+        // Enhanced Building Generation
         function createBuildings() {
             const halfSize = CONFIG.gridSize / 2;
+            const exclusionZone = 15; // Center area without buildings
             
-            for (let i = 0; i < 30; i++) {
-                const x = Math.floor(Math.random() * CONFIG.gridSize - halfSize);
-                const z = Math.floor(Math.random() * CONFIG.gridSize - halfSize);
+            for (let i = 0; i < 40; i++) {
+                const x = Math.floor(Math.random() * (CONFIG.gridSize - exclusionZone * 2) - halfSize + exclusionZone);
+                const z = Math.floor(Math.random() * (CONFIG.gridSize - exclusionZone * 2) - halfSize + exclusionZone);
                 
-                // Don't place in center
-                if (Math.abs(x) < 10 && Math.abs(z) < 10) continue;
+                const width = Math.floor(Math.random() * 6) + 3;
+                const depth = Math.floor(Math.random() * 6) + 3;
+                const height = Math.floor(Math.random() * 12) + 6;
+                const color = CONFIG.buildingColors[Math.floor(Math.random() * CONFIG.buildingColors.length)];
                 
-                const width = Math.floor(Math.random() * 5) + 2;
-                const depth = Math.floor(Math.random() * 5) + 2;
-                const height = Math.floor(Math.random() * 10) + 5;
-                const color = CONFIG.buildingColors[i % CONFIG.buildingColors.length];
-                
+                // Create building with better geometry
                 const geometry = new THREE.BoxGeometry(width, height, depth);
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
                     emissive: 0x001111,
+                    emissiveIntensity: 0.3,
                     transparent: true,
-                    opacity: 0.8
+                    opacity: 0.85,
+                    shininess: 50
                 });
+                
                 const building = new THREE.Mesh(geometry, material);
                 building.position.set(x, height/2, z);
                 building.castShadow = true;
+                building.receiveShadow = true;
                 scene.add(building);
                 
-                // Add edges
+                // Add glowing edges
                 const edges = new THREE.EdgesGeometry(geometry);
-                const line = new THREE.LineSegments(
-                    edges,
-                    new THREE.LineBasicMaterial({ color: CONFIG.lightColor })
-                );
+                const lineMaterial = new THREE.LineBasicMaterial({ 
+                    color: CONFIG.lightColor,
+                    linewidth: 2
+                });
+                const line = new THREE.LineSegments(edges, lineMaterial);
                 line.position.copy(building.position);
                 scene.add(line);
                 
@@ -350,46 +462,64 @@
             }
         }
 
-        // Create Player
-        function createPlayer(color) {
+        // Enhanced Player Creation
+        function createPlayer(color, isAI = false) {
             const group = new THREE.Group();
             
-            // Body
-            const bodyGeometry = new THREE.BoxGeometry(1.5, 2.5, 1);
+            // Body with better geometry
+            const bodyGeometry = new THREE.CylinderGeometry(0.7, 0.5, 2.5, 8);
             const bodyMaterial = new THREE.MeshPhongMaterial({
                 color: color,
-                emissive: color
+                emissive: color,
+                emissiveIntensity: 0.8,
+                shininess: 100
             });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.rotation.x = Math.PI / 2;
             group.add(body);
             
-            // Head
-            const headGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+            // Head with better geometry
+            const headGeometry = new THREE.SphereGeometry(0.6, 16, 16);
             const headMaterial = new THREE.MeshPhongMaterial({
                 color: color,
-                emissive: color
+                emissive: color,
+                emissiveIntensity: 0.5
             });
             const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = 1.8;
+            head.position.set(0, 0, 1.2);
             group.add(head);
             
-            // Trail
-            const trailGeometry = new THREE.CylinderGeometry(0.2, 0.2, 3, 8);
+            // Trail with particle effect
+            const trailGeometry = new THREE.ConeGeometry(0.3, 2, 6);
             const trailMaterial = new THREE.MeshPhongMaterial({
                 color: color,
                 emissive: color,
                 transparent: true,
-                opacity: 0.7
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending
             });
             const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-            trail.rotation.x = Math.PI / 2;
-            trail.position.z = -1.5;
+            trail.rotation.x = Math.PI;
+            trail.position.set(0, 0, -1.5);
             group.add(trail);
+            
+            // Add glow effect for player
+            if (!isAI) {
+                const glowGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.3,
+                    blending: THREE.AdditiveBlending
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                group.add(glow);
+            }
             
             return group;
         }
 
-        // Create Wall
+        // Enhanced Wall Creation
         function createWall(start, end, color) {
             const length = Math.sqrt(
                 Math.pow(end.x - start.x, 2) + 
@@ -397,13 +527,16 @@
             );
             const angle = Math.atan2(end.z - start.z, end.x - start.x);
             
-            const geometry = new THREE.BoxGeometry(length, CONFIG.wallHeight, 0.5);
+            const geometry = new THREE.BoxGeometry(length, CONFIG.wallHeight, 0.3);
             const material = new THREE.MeshPhongMaterial({
                 color: color,
                 emissive: color,
+                emissiveIntensity: 0.7,
                 transparent: true,
-                opacity: CONFIG.wallOpacity
+                opacity: CONFIG.wallOpacity,
+                blending: THREE.AdditiveBlending
             });
+            
             const wall = new THREE.Mesh(geometry, material);
             wall.position.set(
                 (start.x + end.x) / 2,
@@ -411,7 +544,39 @@
                 (start.z + end.z) / 2
             );
             wall.rotation.y = -angle;
+            wall.castShadow = true;
+            
+            // Add pulse animation
+            wall.userData.pulse = 0;
+            
             return wall;
+        }
+
+        // Power-up Creation
+        function createPowerUp(x, z) {
+            const geometry = new THREE.TorusGeometry(0.8, 0.2, 8, 24);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x00ff00,
+                emissive: 0x00aa00,
+                emissiveIntensity: 0.8
+            });
+            
+            const powerUp = new THREE.Mesh(geometry, material);
+            powerUp.position.set(x, 1.5, z);
+            powerUp.rotation.x = Math.PI / 2;
+            powerUp.castShadow = true;
+            
+            // Add rotation animation
+            powerUp.userData = {
+                rotationSpeed: 0.02,
+                pulseSpeed: 0.05,
+                pulseSize: 0
+            };
+            
+            scene.add(powerUp);
+            gameState.powerUps.push(powerUp);
+            
+            return powerUp;
         }
 
         // Initialize Game
@@ -419,36 +584,64 @@
             scene.add(createGrid());
             createBuildings();
             
+            // Create some power-ups
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                const z = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                createPowerUp(x, z);
+            }
+            
             camera.position.set(0, CONFIG.cameraHeight, CONFIG.cameraDistance);
             camera.lookAt(0, 0, 0);
             
             // Start button
             document.getElementById('enter-button').addEventListener('click', startGame);
             
-            // Also allow Enter key to start
+            // Enter key to start
             document.getElementById('player-name').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    startGame();
-                }
+                if (e.key === 'Enter') startGame();
             });
             
             // Keyboard controls
             window.addEventListener('keydown', (e) => {
-                gameState.keys[e.code] = true;
-                if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
+                if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
+                    gameState.keys[e.code] = true;
                     e.preventDefault();
                 }
             });
+            
             window.addEventListener('keyup', (e) => {
-                gameState.keys[e.code] = false;
+                if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) {
+                    gameState.keys[e.code] = false;
+                    e.preventDefault();
+                }
             });
             
+            // Mobile controls
+            if (gameState.isMobile) {
+                const setupMobileButton = (id, keyCode) => {
+                    const btn = document.getElementById(id);
+                    btn.addEventListener('touchstart', () => gameState.keys[keyCode] = true);
+                    btn.addEventListener('touchend', () => gameState.keys[keyCode] = false);
+                };
+                
+                setupMobileButton('up-btn', 'ArrowUp');
+                setupMobileButton('left-btn', 'ArrowLeft');
+                setupMobileButton('down-btn', 'ArrowDown');
+                setupMobileButton('right-btn', 'ArrowRight');
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start game loop
+            gameState.lastTime = performance.now();
             animate();
         }
 
         // Start Game
         function startGame() {
-            const playerName = document.getElementById('player-name').value.trim() || 'Player';
+            const playerName = document.getElementById('player-name').value.trim() || 'USER';
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-ui').classList.add('active');
             document.querySelector('.player-name').textContent = playerName.toUpperCase();
@@ -465,19 +658,26 @@
                 model: createPlayer(color),
                 direction: { x: 0, z: 0 },
                 speed: CONFIG.moveSpeed,
-                lastWallTime: 0
+                lastWallTime: 0,
+                isBoosting: false,
+                boostEndTime: 0,
+                score: 0,
+                wallsCreated: 0
             };
             scene.add(gameState.players[gameState.myPlayerId].model);
             
-            // Add AI players
-            addAIPlayer('Rinzler', -10, 0, CONFIG.playerColors[1]);
-            addAIPlayer('Quorra', 10, 0, CONFIG.playerColors[2]);
-            addAIPlayer('CLU', 0, -10, CONFIG.playerColors[3]);
+            // Add AI players with different behaviors
+            addAIPlayer('RINZLER', -15, 0, CONFIG.playerColors[1], 'aggressive');
+            addAIPlayer('QUORRA', 15, 0, CONFIG.playerColors[2], 'defensive');
+            addAIPlayer('CLU', 0, -15, CONFIG.playerColors[3], 'random');
+            addAIPlayer('TRON', 0, 15, 0xffffff, 'patrol');
             
             gameState.gameStarted = true;
+            gameState.score = 0;
         }
 
-        function addAIPlayer(name, x, z, color) {
+        // Enhanced AI Player Creation
+        function addAIPlayer(name, x, z, color, behavior = 'random') {
             const id = 'ai-' + Math.random().toString(36).substr(2, 9);
             gameState.players[id] = {
                 id,
@@ -485,15 +685,26 @@
                 x,
                 z,
                 color,
-                model: createPlayer(color),
+                model: createPlayer(color, true),
                 direction: { 
                     x: Math.random() > 0.5 ? 1 : -1, 
                     z: Math.random() > 0.5 ? 1 : -1 
                 },
-                speed: CONFIG.moveSpeed * 0.8,
+                speed: CONFIG.moveSpeed * 0.7,
                 lastTurn: 0,
-                isAI: true
+                isAI: true,
+                behavior,
+                targetX: 0,
+                targetZ: 0,
+                wallsCreated: 0
             };
+            
+            // Set initial target based on behavior
+            if (behavior === 'patrol') {
+                gameState.players[id].targetX = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+                gameState.players[id].targetZ = Math.random() * CONFIG.gridSize - CONFIG.gridSize/2;
+            }
+            
             scene.add(gameState.players[id].model);
         }
 
@@ -501,159 +712,122 @@
         function animate() {
             requestAnimationFrame(animate);
             
+            const time = performance.now();
+            const deltaTime = time - gameState.lastTime;
+            gameState.lastTime = time;
+            
             if (gameState.gameStarted) {
-                // Update players
-                Object.values(gameState.players).forEach(player => {
-                    updatePlayer(player);
-                });
-                
-                // Check collisions
+                // Update all game elements
+                updatePlayers(deltaTime);
+                updateWalls();
+                updatePowerUps();
                 checkCollisions();
+                updateUI();
                 
-                // Update UI
+                // Update camera to follow player
                 if (gameState.myPlayerId && gameState.players[gameState.myPlayerId]) {
                     const player = gameState.players[gameState.myPlayerId];
-                    document.getElementById('player-position').textContent = 
-                        `${Math.floor(player.x)},${Math.floor(player.z)}`;
-                    document.getElementById('player-count').textContent = 
-                        Object.keys(gameState.players).length;
+                    const cameraOffset = player.isBoosting ? 40 : 35;
+                    const targetX = player.x;
+                    const targetZ = player.z + cameraOffset;
+                    
+                    // Smooth camera movement
+                    camera.position.x += (targetX - camera.position.x) * 0.1;
+                    camera.position.z += (targetZ - camera.position.z) * 0.1;
+                    camera.lookAt(player.x, 0, player.z);
                 }
             }
             
             renderer.render(scene, camera);
         }
 
-        function updatePlayer(player) {
-            const oldX = player.x;
-            const oldZ = player.z;
-            
-            // Handle input
-            if (player.id === gameState.myPlayerId) {
-                player.direction = { x: 0, z: 0 };
-                if (gameState.keys['ArrowUp'] || gameState.keys['KeyW']) player.direction.z = -1;
-                if (gameState.keys['ArrowDown'] || gameState.keys['KeyS']) player.direction.z = 1;
-                if (gameState.keys['ArrowLeft'] || gameState.keys['KeyA']) player.direction.x = -1;
-                if (gameState.keys['ArrowRight'] || gameState.keys['KeyD']) player.direction.x = 1;
-                
-                // Normalize diagonal
-                if (player.direction.x !== 0 && player.direction.z !== 0) {
-                    player.direction.x *= 0.7071;
-                    player.direction.z *= 0.7071;
-                }
-            } 
-            // AI movement
-            else if (player.isAI) {
-                player.lastTurn++;
-                if (player.lastTurn > 100 || Math.random() < 0.01) {
-                    player.direction = {
-                        x: Math.random() > 0.5 ? 1 : -1,
-                        z: Math.random() > 0.5 ? 1 : -1
-                    };
-                    player.lastTurn = 0;
-                }
-            }
-            
-            // Update position
-            const newX = player.x + player.direction.x * player.speed;
-            const newZ = player.z + player.direction.z * player.speed;
-            
-            // Create wall if moving
-            if ((player.direction.x !== 0 || player.direction.z !== 0) && 
-                Date.now() - player.lastWallTime > 100) {
-                const wall = createWall(
-                    { x: player.x, z: player.z },
-                    { x: newX, z: newZ },
-                    player.color
-                );
-                scene.add(wall);
-                gameState.walls.push(wall);
-                player.lastWallTime = Date.now();
-            }
-            
-            player.x = newX;
-            player.z = newZ;
-            player.model.position.set(player.x, 0, player.z);
-            
-            // Face direction
-            if (player.direction.x !== 0 || player.direction.z !== 0) {
-                player.model.rotation.y = Math.atan2(player.direction.x, -player.direction.z);
-            }
-            
-            // Update camera
-            if (player.id === gameState.myPlayerId) {
-                camera.position.set(player.x - 10, CONFIG.cameraHeight, player.z + CONFIG.cameraDistance);
-                camera.lookAt(player.x, 0, player.z);
-            }
-        }
-
-        function checkCollisions() {
-            // Clean up walls
-            if (gameState.walls.length > 200) {
-                const toRemove = gameState.walls.splice(0, 50);
-                toRemove.forEach(wall => scene.remove(wall));
-            }
-            
-            // Check collisions
+        // Enhanced Player Update
+        function updatePlayers(deltaTime) {
             Object.values(gameState.players).forEach(player => {
-                // Check boundaries
-                if (Math.abs(player.x) > CONFIG.gridSize/2 - 1 || 
-                    Math.abs(player.z) > CONFIG.gridSize/2 - 1) {
-                    handleCrash(player);
-                    return;
-                }
+                const oldX = player.x;
+                const oldZ = player.z;
                 
-                // Check walls
-                gameState.walls.forEach(wall => {
-                    const dist = Math.sqrt(
-                        Math.pow(player.x - wall.position.x, 2) + 
-                        Math.pow(player.z - wall.position.z, 2)
-                    );
-                    if (dist < 0.8) {
-                        handleCrash(player);
-                    }
-                });
-            });
-        }
-
-        function handleCrash(player) {
-            // Visual effect
-            player.model.traverse(child => {
-                if (child.material) {
-                    child.material.color.setHex(0xff0000);
-                }
-            });
-            
-            // Remove player
-            setTimeout(() => {
-                scene.remove(player.model);
-                delete gameState.players[player.id];
-                
-                // Game over if player crashed
+                // Handle player input
                 if (player.id === gameState.myPlayerId) {
-                    alert("GAME OVER\nYou crashed into a wall!");
-                    document.getElementById('start-screen').style.display = 'flex';
-                    document.getElementById('game-ui').classList.remove('active');
-                    gameState.gameStarted = false;
-                    
-                    // Reset game state
-                    gameState.players = {};
-                    gameState.walls.forEach(wall => scene.remove(wall));
-                    gameState.walls = [];
-                    scene.children = [];
-                    initGame();
+                    updateHumanPlayer(player);
+                } else {
+                    updateAIPlayer(player, deltaTime);
                 }
-            }, 500);
+                
+                // Create wall segments
+                if ((player.direction.x !== 0 || player.direction.z !== 0) && 
+                    Date.now() - player.lastWallTime > 100) {
+                    createWallSegment(player, oldX, oldZ);
+                    player.lastWallTime = Date.now();
+                    player.wallsCreated++;
+                }
+                
+                // Update position
+                const speedMultiplier = player.isBoosting ? CONFIG.speedBoostMultiplier : 1;
+                player.x += player.direction.x * player.speed * speedMultiplier;
+                player.z += player.direction.z * player.speed * speedMultiplier;
+                player.model.position.set(player.x, 0, player.z);
+                
+                // Face direction
+                if (player.direction.x !== 0 || player.direction.z !== 0) {
+                    player.model.rotation.y = Math.atan2(player.direction.x, -player.direction.z);
+                }
+                
+                // Check boost status
+                if (player.isBoosting && Date.now() > player.boostEndTime) {
+                    player.isBoosting = false;
+                    if (player.id === gameState.myPlayerId) {
+                        document.querySelector('.player-score').textContent = `SPEED: 100%`;
+                    }
+                }
+            });
         }
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        function updateHumanPlayer(player) {
+            player.direction = { x: 0, z: 0 };
+            
+            // Keyboard controls
+            if (gameState.keys['ArrowUp'] || gameState.keys['KeyW']) player.direction.z = -1;
+            if (gameState.keys['ArrowDown'] || gameState.keys['KeyS']) player.direction.z = 1;
+            if (gameState.keys['ArrowLeft'] || gameState.keys['KeyA']) player.direction.x = -1;
+            if (gameState.keys['ArrowRight'] || gameState.keys['KeyD']) player.direction.x = 1;
+            
+            // Boost with spacebar
+            if ((gameState.keys['Space'] || gameState.keys['ShiftLeft']) && !player.isBoosting) {
+                player.isBoosting = true;
+                player.boostEndTime = Date.now() + CONFIG.boostDuration;
+                document.querySelector('.player-score').textContent = `SPEED: ${Math.floor(CONFIG.speedBoostMultiplier * 100)}%`;
+            }
+            
+            // Normalize diagonal movement
+            if (player.direction.x !== 0 && player.direction.z !== 0) {
+                player.direction.x *= 0.7071;
+                player.direction.z *= 0.7071;
+            }
+        }
 
-        // Start the game
-        initGame();
-    </script>
-</body>
-</html>
+        // Enhanced AI Behavior
+        function updateAIPlayer(player, deltaTime) {
+            player.lastTurn += deltaTime;
+            
+            // Different behaviors
+            switch(player.behavior) {
+                case 'aggressive':
+                    // Try to chase player
+                    if (gameState.myPlayerId && gameState.players[gameState.myPlayerId]) {
+                        const target = gameState.players[gameState.myPlayerId];
+                        const dx = target.x - player.x;
+                        const dz = target.z - player.z;
+                        const distance = Math.sqrt(dx*dx + dz*dz);
+                        
+                        if (distance < 30 && player.lastTurn > 1000) {
+                            player.direction.x = dx / distance;
+                            player.direction.z = dz / distance;
+                            player.lastTurn = 0;
+                        }
+                    }
+                    break;
+                    
+                case 'defensive':
+                    // Avoid walls and stay in open areas
+                    if (player.lastTurn > 500)
