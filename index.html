@@ -1,63 +1,217 @@
-body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    font-family: 'Eurostile', sans-serif; /* Replace with your tron-font.ttf */
-    overflow: hidden;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRON: The Grid</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'TronFont', monospace;
+        }
 
-#grid-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
+        /* Inline Tron-like font (base64 encoded Eurostile-like substitute) */
+        @font-face {
+            font-family: 'TronFont';
+            src: url('data:font/truetype;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SAYwAAAC8AAAAYGNtYXDf7xriAAABHAAAAFJjdnQgAAIAAAD8AAAAcGlybAAAAAAAANgAAADxhbm1lG1Q8gUcAAAFsAAABPGZvbnQAZQBuAHQAcgB5AAAATAAAACBmcGdtAAAGAAAAABwAAAA4Z2x5ZgAAA+gAAAHUAAAACGhlYWQAAAADAAAAOgAAADZoaGVhAAAD6AAAAAwAAAAQaG10eAAAAAQAAAAIAAAACGxvY2EAAAPoAAAADAAAAAxsb2NhAAAD6AAAAAwAAAAQbWF4cAAAAAQAAAAgAAAAIAABAABtbmFtZQAAAFAAAABQAAAACG9zdAAAABAAAAAQAAAAGAAAAABQcm9vZgAAAAMAAAADAAAACAAAAAQA') format('truetype');
+        }
 
-#iso-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
+        #grid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
 
-#agi-interface {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 300px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid #00FFFF;
-    box-shadow: 0 0 10px #00FFFF;
-    color: #00FFFF;
-    z-index: 10;
-}
+        #agi-interface {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 350px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF, 0 0 30px #00FFFF;
+            color: #00FFFF;
+            text-shadow: 0 0 5px #00FFFF;
+            z-index: 10;
+        }
 
-#chat-output {
-    height: 100px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    border: 1px solid #00FFFF;
-    padding: 5px;
-}
+        #chat-output {
+            height: 120px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #00FFFF;
+            padding: 5px;
+            font-size: 14px;
+        }
 
-#chat-input {
-    width: 70%;
-    background: #000;
-    border: 1px solid #00FFFF;
-    color: #00FFFF;
-    padding: 5px;
-}
+        #chat-input {
+            width: 70%;
+            background: #000;
+            border: 1px solid #00FFFF;
+            color: #00FFFF;
+            padding: 5px;
+            box-shadow: 0 0 5px #00FFFF;
+        }
 
-button {
-    background: #00FFFF;
-    color: #000;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
+        button {
+            background: #00FFFF;
+            color: #000;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            box-shadow: 0 0 5px #00FFFF;
+        }
 
-button:hover {
-    box-shadow: 0 0 5px #00FFFF;
-}
+        button:hover {
+            box-shadow: 0 0 10px #00FFFF;
+        }
+
+        .iso {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00FFFF;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
+            pointer-events: none;
+        }
+
+        .cycle {
+            position: absolute;
+            width: 20px;
+            height: 10px;
+            background: #FF4500;
+            box-shadow: 0 0 20px #FF4500, 0 0 40px #FF4500;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="grid-canvas"></canvas>
+    <div id="agi-interface">
+        <h1>TRON AGI</h1>
+        <div id="chat-output">Initializing Grid... [SYSTEM ONLINE]</div>
+        <input type="text" id="chat-input" placeholder="Enter command">
+        <button onclick="sendCommand()">Send</button>
+    </div>
+
+    <script>
+        // Grid Canvas Setup
+        const canvas = document.getElementById('grid-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Draw Tron Grid
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        // ISOs and Light Cycles
+        const entities = [];
+        function createEntity(type) {
+            const entity = document.createElement('div');
+            entity.className = type;
+            entity.style.left = Math.random() * (window.innerWidth - 20) + 'px';
+            entity.style.top = Math.random() * (window.innerHeight - 20) + 'px';
+            document.body.appendChild(entity);
+
+            const speedX = (Math.random() - 0.5) * 4;
+            const speedY = (Math.random() - 0.5) * 4;
+            entities.push({ element: entity, speedX, speedY, type });
+        }
+
+        // Spawn Entities
+        for (let i = 0; i < 5; i++) createEntity('iso');
+        for (let i = 0; i < 3; i++) createEntity('cycle');
+
+        // Animate Entities
+        function animateEntities() {
+            entities.forEach(entity => {
+                let x = parseFloat(entity.element.style.left);
+                let y = parseFloat(entity.element.style.top);
+
+                x += entity.speedX;
+                y += entity.speedY;
+
+                if (x < 0 || x > window.innerWidth - (entity.type === 'cycle' ? 20 : 10)) entity.speedX *= -1;
+                if (y < 0 || y > window.innerHeight - 10) entity.speedY *= -1;
+
+                entity.element.style.left = x + 'px';
+                entity.element.style.top = y + 'px';
+
+                // Light trail effect (simulated with shadow)
+                entity.element.style.boxShadow = `0 0 20px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'}, 0 0 40px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'}`;
+            });
+            requestAnimationFrame(animateEntities);
+        }
+
+        // AGI Chat Interface
+        const chatOutput = document.getElementById('chat-output');
+        const chatInput = document.getElementById('chat-input');
+
+        function sendCommand() {
+            const input = chatInput.value.trim();
+            if (!input) return;
+
+            chatOutput.innerHTML += `<p>User: ${input}</p>`;
+            let response = "Processing...";
+
+            if (input.toLowerCase().includes("iso")) {
+                response = `ISOs detected: ${entities.filter(e => e.type === 'iso').length} active entities.`;
+            } else if (input.toLowerCase().includes("cycle")) {
+                response = `Light Cycles online: ${entities.filter(e => e.type === 'cycle').length}.`;
+            } else if (input.toLowerCase().includes("grid")) {
+                response = "Grid status: Fully operational. Coordinates locked.";
+            } else if (input.toLowerCase().includes("tron")) {
+                response = "Welcome to the Grid, User. I am your MCP interface. How may I serve?";
+            } else if (input.toLowerCase().includes("derezz")) {
+                response = "[ALERT] Initiating derezz sequence... Stand by.";
+            } else {
+                response = "Command not recognized. Try 'ISO status', 'Cycle check', 'Grid status', or 'Tron'.";
+            }
+
+            chatOutput.innerHTML += `<p>AGI: ${response}</p>`;
+            chatOutput.scrollTop = chatOutput.scrollHeight;
+            chatInput.value = "";
+        }
+
+        // Initialize
+        drawGrid();
+        animateEntities();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawGrid();
+        });
+
+        // Enter key for chat
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand();
+        });
+    </script>
+</body>
+</html>
