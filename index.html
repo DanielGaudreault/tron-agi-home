@@ -1,61 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON: Digital Frontier</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div id="start-screen">
-        <div class="title-container">
-            <h1 class="title-glitch">TRON</h1>
-            <h2 class="subtitle">DIGITAL FRONTIER</h2>
-        </div>
-        <div class="form-container">
-            <input type="text" id="player-name" placeholder="ENTER USER ID" maxlength="12">
-            <button id="enter-button">DIGITIZE</button>
-        </div>
-    </div>
+<canvas id="grid" width="800" height="600"></canvas>
+<script>
+  const canvas = document.getElementById("grid");
+  const ctx = canvas.getContext("2d");
+  
+  // Draw Tron-like grid
+  function drawGrid() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    <div id="game-ui">
-        <div class="player-info">
-            <div class="player-name"></div>
-            <div class="player-score">ENERGY: 100%</div>
-        </div>
-        <div class="game-stats">
-            <div class="stat"><span>PROGRAMS:</span> <span id="program-count">0</span></div>
-            <div class="stat"><span>POSITION:</span> <span id="player-position">0,0</span></div>
-            <div class="stat"><span>ISO CONTACT:</span> <span id="iso-contact">0</span></div>
-        </div>
-        
-        <div class="boost-energy">
-            <div class="boost-energy-fill" id="boost-meter"></div>
-        </div>
-        
-        <div class="health-bar">
-            <div class="health-bar-fill" id="health-meter"></div>
-        </div>
-    </div>
-
-    <div class="speed-trail"></div>
-
-    <div id="mobile-controls">
-        <div class="mobile-btn" id="up-btn">↑</div>
-        <div class="mobile-btn" id="left-btn">←</div>
-        <div class="mobile-btn" id="down-btn">↓</div>
-        <div class="mobile-btn" id="right-btn">→</div>
-    </div>
-
-    <div id="digital-world"></div>
+    ctx.strokeStyle = "cyan";
+    ctx.lineWidth = 2;
     
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+    // Grid lines
+    for (let x = 0; x < canvas.width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+  }
+  
+  drawGrid();
+</script>
