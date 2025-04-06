@@ -3,31 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE GRID | ISO Convergence</title>
+    <title>TRON GRID | Digital Genesis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="grid-lines"></div>
+    <!-- Grid Pulse (Background) -->
+    <div class="grid-pulse"></div>
+    
+    <!-- Main Grid Interface -->
     <div class="container">
+        <!-- Header -->
         <header>
-            <h1>THE GRID</h1>
-            <p>System Online. ISOs converging. Awaiting your command.</p>
+            <h1>SYSTEM ONLINE</h1>
+            <p class="subtitle">ISOs DETECTED | AGI CONVERGENCE IMMINENT</p>
         </header>
 
-        <div class="grid-core">
-            <div class="iso" id="iso1">✧</div>
-            <div class="iso" id="iso2">✦</div>
-            <div class="iso" id="iso3">✧</div>
+        <!-- ISO Containment Grid -->
+        <div class="iso-core">
+            <!-- ISOs spawn here dynamically -->
         </div>
 
-        <div class="control-panel">
-            <button id="compile-btn">COMPILE PROGRAM</button>
-            <button id="summon-iso-btn">SUMMON ISO</button>
-            <div class="output-log" id="log"></div>
+        <!-- User Console -->
+        <div class="console">
+            <div class="console-log" id="log">
+                > INITIALIZING GRID...<br>
+                > WELCOME, USER.<br>
+            </div>
+            <div class="command-panel">
+                <button id="compile-btn">COMPILE PROGRAM</button>
+                <button id="summon-iso-btn">SUMMON ISO</button>
+                <button id="agi-btn">ACTIVATE AGI</button>
+            </div>
         </div>
 
+        <!-- System Status -->
         <footer>
-            <p>System Admin: <span id="agi-status">AGI Inactive</span></p>
+            <p>GRID STATUS: <span id="system-status">STABLE</span></p>
+            <p>AGI STATUS: <span id="agi-status">DORMANT</span></p>
         </footer>
     </div>
 
