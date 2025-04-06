@@ -27,66 +27,83 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,30,0.95);
+    background: radial-gradient(ellipse at center, rgba(0,20,40,0.95) 0%, rgba(0,0,30,0.98) 100%);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 100;
-    color: #00ffff;
+}
+
+.title-container {
     text-align: center;
+    margin-bottom: 40px;
+    animation: float 6s ease-in-out infinite;
 }
 
-.title-container h1 {
+.title-glitch {
     font-size: 5rem;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-    letter-spacing: 5px;
+    text-transform: uppercase;
+    letter-spacing: 10px;
+    color: #00ffff;
+    text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff;
+    margin-bottom: 20px;
 }
 
-.title-container h2 {
+.subtitle {
     font-size: 1.5rem;
-    margin-bottom: 3rem;
-    color: rgba(0, 255, 255, 0.7);
-    letter-spacing: 3px;
+    letter-spacing: 5px;
+    color: rgba(0, 255, 255, 0.8);
+    text-shadow: 0 0 10px #00ffff;
 }
 
 .form-container {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    gap: 20px;
+    background-color: rgba(0, 30, 60, 0.6);
+    border: 1px solid #00ffff;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    padding: 30px;
+    width: 400px;
+    max-width: 90%;
+    border-radius: 5px;
 }
 
 #player-name {
-    background: rgba(0, 20, 40, 0.8);
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    background-color: rgba(0, 20, 40, 0.8);
     border: 1px solid #00ffff;
     color: #00ffff;
-    padding: 12px;
     font-family: 'Courier New', monospace;
-    font-size: 1rem;
+    font-size: 16px;
     text-align: center;
     outline: none;
+    transition: all 0.3s;
 }
 
-#player-name::placeholder {
-    color: rgba(0, 255, 255, 0.5);
+#player-name:focus {
+    box-shadow: 0 0 15px #00ffff;
+    background-color: rgba(0, 40, 80, 0.9);
 }
 
-#start-button {
-    background: rgba(0, 100, 200, 0.7);
+#enter-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to right, rgba(0, 80, 160, 0.8), rgba(0, 160, 220, 0.6));
     border: 1px solid #00ffff;
     color: #00ffff;
-    padding: 12px;
     font-family: 'Courier New', monospace;
-    font-size: 1.2rem;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s;
 }
 
-#start-button:hover {
-    background: rgba(0, 200, 255, 0.7);
-    box-shadow: 0 0 15px #00ffff;
+#enter-button:hover {
+    background: linear-gradient(to right, rgba(0, 120, 220, 0.9), rgba(0, 200, 255, 0.7));
+    box-shadow: 0 0 20px #00ffff;
+    transform: translateY(-2px);
 }
 
 /* === GAME UI === */
@@ -98,34 +115,41 @@ canvas {
     color: #00ffff;
     font-size: 14px;
     text-shadow: 0 0 5px #00ffff;
-    display: none;
+    opacity: 0;
+    transition: opacity 1s;
+    pointer-events: none;
+}
+
+#game-ui.active {
+    opacity: 1;
 }
 
 .player-info {
-    background: rgba(0, 20, 40, 0.7);
+    background-color: rgba(0, 20, 40, 0.7);
     border: 1px solid #00ffff;
     padding: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
 .player-name {
-    font-size: 1.2rem;
+    font-size: 18px;
+    letter-spacing: 2px;
     margin-bottom: 5px;
-    letter-spacing: 1px;
 }
 
 .player-score {
+    font-size: 16px;
     color: rgba(0, 255, 255, 0.8);
 }
 
 .game-stats {
-    background: rgba(0, 20, 40, 0.7);
+    background-color: rgba(0, 20, 40, 0.7);
     border: 1px solid #00ffff;
     padding: 15px;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
 .stat {
@@ -140,26 +164,38 @@ canvas {
 
 .stat span:first-child {
     color: rgba(0, 255, 255, 0.7);
-    margin-right: 10px;
 }
 
-/* Responsive Design */
+/* === ANIMATIONS === */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+
+/* === RESPONSIVE DESIGN === */
 @media (max-width: 768px) {
-    .title-container h1 {
+    .title-glitch {
         font-size: 3rem;
+        letter-spacing: 5px;
     }
     
-    .title-container h2 {
+    .subtitle {
         font-size: 1rem;
     }
     
     .form-container {
-        width: 80%;
+        padding: 25px;
+        width: 90%;
     }
     
     #game-ui {
         font-size: 12px;
         top: 10px;
         left: 10px;
+    }
+    
+    .player-info, .game-stats {
+        padding: 10px;
     }
 }
