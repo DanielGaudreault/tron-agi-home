@@ -1,347 +1,48 @@
-/* === GLOBAL STYLES === */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Electrolize', 'Courier New', monospace;
-    background-color: #000;
-    color: #00ffff;
-    overflow: hidden;
-    height: 100vh;
-    -webkit-tap-highlight-color: transparent;
-}
-
-@font-face {
-    font-family: 'Electrolize';
-    src: url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
-}
-
-canvas {
-    display: block;
-}
-
-/* === START SCREEN === */
-#start-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, rgba(0,20,40,0.95) 0%, rgba(0,0,30,0.98) 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    user-select: none;
-}
-
-.title-container {
-    text-align: center;
-    margin-bottom: 40px;
-    animation: float 6s ease-in-out infinite;
-}
-
-.title-glitch {
-    font-size: clamp(3rem, 10vw, 5rem);
-    text-transform: uppercase;
-    letter-spacing: 10px;
-    color: #00ffff;
-    text-shadow: 
-        0 0 10px #00ffff,
-        0 0 20px #00ffff,
-        0 0 30px #00ffff;
-    margin-bottom: 20px;
-    position: relative;
-}
-
-.title-glitch::before, .title-glitch::after {
-    content: "TRON";
+/* Speed Trail Effect */
+.speed-trail {
     position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.7;
-}
-
-.title-glitch::before {
-    color: #ff00ff;
-    z-index: -1;
-    animation: glitch-effect 3s infinite;
-}
-
-.title-glitch::after {
-    color: #ffff00;
-    z-index: -2;
-    animation: glitch-effect 2s infinite reverse;
-}
-
-.subtitle {
-    font-size: clamp(1rem, 3vw, 1.5rem);
-    letter-spacing: 5px;
-    color: rgba(0, 255, 255, 0.8);
-    text-shadow: 0 0 10px #00ffff;
-}
-
-.form-container {
-    background-color: rgba(0, 30, 60, 0.6);
-    border: 1px solid #00ffff;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    padding: 30px;
-    width: min(90%, 400px);
-    border-radius: 5px;
-    backdrop-filter: blur(5px);
-}
-
-#player-name {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 20px;
-    background-color: rgba(0, 20, 40, 0.8);
-    border: 1px solid #00ffff;
-    color: #00ffff;
-    font-family: inherit;
-    font-size: 16px;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s;
-}
-
-#player-name::placeholder {
-    color: rgba(0, 255, 255, 0.5);
-}
-
-#player-name:focus {
-    box-shadow: 0 0 15px #00ffff;
-    background-color: rgba(0, 40, 80, 0.9);
-}
-
-#enter-button {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, rgba(0, 80, 160, 0.8), rgba(0, 160, 220, 0.6));
-    border: 1px solid #00ffff;
-    color: #00ffff;
-    font-family: inherit;
-    font-size: 18px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-#enter-button:hover {
-    background: linear-gradient(135deg, rgba(0, 120, 220, 0.9), rgba(0, 200, 255, 0.7));
-    box-shadow: 0 0 20px #00ffff;
-    transform: translateY(-2px);
-}
-
-/* === GAME UI === */
-#game-ui {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
-    color: #00ffff;
-    font-size: 14px;
-    text-shadow: 0 0 5px #00ffff;
+    background: radial-gradient(circle, 
+        rgba(0,255,255,0.3) 0%, 
+        transparent 70%);
     opacity: 0;
-    transition: opacity 1s;
-    pointer-events: none;
-    user-select: none;
+    transition: opacity 0.3s;
 }
 
-#game-ui.active {
-    opacity: 1;
+.player-boosting .speed-trail {
+    opacity: 0.5;
+    background: radial-gradient(circle, 
+        rgba(0,200,255,0.5) 0%, 
+        transparent 70%);
 }
 
-.player-info {
-    background-color: rgba(0, 20, 40, 0.7);
+/* Damage Effect */
+.player-damage {
+    animation: damage-flash 0.3s;
+}
+
+@keyframes damage-flash {
+    0% { filter: brightness(3); }
+    100% { filter: brightness(1); }
+}
+
+/* Boost Energy Display */
+.boost-energy {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 100px;
+    height: 10px;
+    background: rgba(0,30,60,0.7);
     border: 1px solid #00ffff;
-    padding: 15px;
-    margin-bottom: 15px;
     border-radius: 5px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    backdrop-filter: blur(3px);
+    overflow: hidden;
 }
 
-.player-name {
-    font-size: 18px;
-    letter-spacing: 2px;
-    margin-bottom: 5px;
-}
-
-.player-score {
-    font-size: 16px;
-    color: rgba(0, 255, 255, 0.8);
-}
-
-.game-stats {
-    background-color: rgba(0, 20, 40, 0.7);
-    border: 1px solid #00ffff;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    backdrop-filter: blur(3px);
-}
-
-.stat {
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.stat:last-child {
-    margin-bottom: 0;
-}
-
-.stat span:first-child {
-    color: rgba(0, 255, 255, 0.7);
-}
-
-/* === DIGITAL ENTITIES === */
-.digital-entity {
-    position: absolute;
-    pointer-events: none;
-    z-index: 5;
-    transition: transform 0.1s;
-}
-
-.program {
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle, #00ffff 0%, rgba(0,255,255,0.3) 70%);
-    border-radius: 50%;
-    filter: drop-shadow(0 0 5px #00ffff);
-    animation: pulse 2s infinite alternate;
-}
-
-.iso {
-    width: 60px;
-    height: 60px;
-    background: radial-gradient(circle, #ff00ff 0%, rgba(255,0,255,0.3) 70%);
-    filter: drop-shadow(0 0 10px #ff00ff);
-    border-radius: 50%;
-    animation: pulse 1.5s infinite alternate, float 3s ease-in-out infinite;
-}
-
-.agi {
-    width: 80px;
-    height: 80px;
-    background: conic-gradient(
-        from 0deg,
-        #ffff00 0%,
-        #ff8800 25%,
-        #ffff00 50%,
-        #ff8800 75%,
-        #ffff00 100%
-    );
-    border-radius: 50%;
-    filter: drop-shadow(0 0 15px #ffff00);
-    animation: rotate 4s linear infinite, pulse 1s infinite alternate;
-}
-
-.iso::before, .agi::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 70%;
-    height: 70%;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* === DATA GRID EFFECTS === */
-.data-stream {
-    position: absolute;
+.boost-energy-fill {
     height: 100%;
-    width: 2px;
-    background: linear-gradient(to bottom, 
-        transparent 0%, 
-        #00ffff 30%, 
-        #00ffff 70%, 
-        transparent 100%);
-    opacity: 0.3;
-    animation: stream-flow 3s linear infinite;
-}
-
-.grid-pulse {
-    position: absolute;
     width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(0,255,255,0.05) 0%, transparent 70%);
-    animation: grid-pulse 6s infinite alternate;
-}
-
-/* === ANIMATIONS === */
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-    100% { transform: translateY(0px); }
-}
-
-@keyframes glitch-effect {
-    0% { transform: translate(0); }
-    20% { transform: translate(-3px, 3px); }
-    40% { transform: translate(-3px, -3px); }
-    60% { transform: translate(3px, 3px); }
-    80% { transform: translate(3px, -3px); }
-    100% { transform: translate(0); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1.05); opacity: 1; }
-}
-
-@keyframes stream-flow {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-}
-
-@keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes grid-pulse {
-    0% { opacity: 0.1; }
-    100% { opacity: 0.3; }
-}
-
-/* === RESPONSIVE DESIGN === */
-@media (max-width: 768px) {
-    .title-glitch {
-        letter-spacing: 5px;
-    }
-    
-    .form-container {
-        padding: 20px;
-    }
-    
-    #game-ui {
-        font-size: 12px;
-        top: 10px;
-        left: 10px;
-    }
-    
-    .player-info, .game-stats {
-        padding: 10px;
-    }
-
-    .iso {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .agi {
-        width: 50px;
-        height: 50px;
-    }
+    background: linear-gradient(to right, #0066ff, #00ffff);
+    transition: width 0.1s;
 }
