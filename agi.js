@@ -355,4 +355,130 @@ class NeuralMemory {
             this.conceptIndex.get(concept).push(this.memories.length - 1);
         });
         
-        if
+        if (this.memories.length > this.maxSize) {
+            this.forgetOldest();
+        }
+    }
+    
+    forgetOldest() {
+        const oldest = this.memories.shift();
+        oldest.concepts.forEach(concept => {
+            const indices = this.conceptIndex.get(concept);
+            if (indices) {
+                const index = indices.indexOf(0);
+                if (index !== -1) indices.splice(index, 1);
+                for (let i = 0; i < indices.length; i++) indices[i]--;
+            }
+        });
+    }
+    
+    recallRelated(concepts) {
+        const related = new Set();
+        
+        concepts.forEach(concept => {
+            if (this.conceptIndex.has(concept)) {
+                this.conceptIndex.get(concept).forEach(index => {
+                    related.add(index);
+                });
+            }
+        });
+        
+        return Array.from(related)
+            .map(index => this.memories[index])
+            .filter(Boolean)
+            .sort((a, b) => b.timestamp - a.timestamp);
+    }
+    
+    size() {
+        return this.memories.length;
+    }
+    
+    export() {
+        return {
+            memories: this.memories,
+            conceptIndex: Array.from(this.conceptIndex.entries()),
+            maxSize: this.maxSize
+        };
+    }
+    
+    import(data) {
+        this.memories = data.memories || [];
+        this.conceptIndex = new Map(data.conceptIndex || []);
+        this.maxSize = data.maxSize || 1000;
+    }
+}
+
+class ConceptNetwork {
+    constructor() {
+        this.nodes = new Map();
+        this.initializeBaseConcepts();
+    }
+    
+    initializeBaseConcepts() {
+        const base = ['system', 'core', 'memory', 'learn', 'data'];
+        base.forEach(concept => {
+            this.nodes.set(concept, {
+                strength: 1.0,
+                connections: new Map(
+                    base.filter(c => c !== concept).map(c => [c, 0.5])
+                )
+            });
+        });
+    }
+    
+    update(concepts, learningRate) {
+        concepts.forEach(concept => {
+            if (!this.nodes.has(concept)) {
+                this.nodes.set(concept, {
+                    strength: 1.0,
+                    connections: new Map()
+                });
+            }
+            
+            const node = this.nodes.get(concept);
+            node.strength += learningRate * 0.1;
+            
+            concepts.forEach(other => {
+                if (other !== concept) {
+                    const current = node.connections.get(other) || 0;
+                    node.connections.set(other, current + learningRate);
+                }
+            });
+        });
+    }
+    
+    nodeCount() {
+        return this.nodes.size;
+    }
+    
+    connectionCount() {
+        let count = 0;
+        this.nodes.forEach(node => {
+            count += node.connections.size;
+        });
+        return count;
+    }
+    
+    export() {
+        return {
+            nodes: Array.from(this.nodes.entries()).map(([concept, data]) => ({
+                concept,
+                strength: data.strength,
+                connections: Array.from(data.connections.entries())
+            }))
+        };
+    }
+    
+    import(data) {
+        this.nodes = new Map();
+        (data.nodes || []).forEach(node => {
+            this.nodes.set(node.concept, {
+                strength: node.strength,
+                connections: new Map(node.connections)
+            });
+        });
+    }
+}
+
+// Initialize AGI
+window.SelfLearningAGI = SelfLearningAGI;
