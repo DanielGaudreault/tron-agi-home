@@ -3,117 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON Autonomous Learning Core</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>TRON AGI Core v3.0</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FontLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/geometries/TextGeometry.js"></script>
-    <script src="three-tron.js"></script>
-    <script src="agi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-    <audio id="startup-sound" src="sounds/startup.mp3" preload="auto"></audio>
-    <audio id="input-sound" src="sounds/input.mp3" preload="auto"></audio>
-    <audio id="response-sound" src="sounds/response.mp3" preload="auto"></audio>
+    <!-- Audio Elements -->
+    <audio id="startup-sound" src="assets/sounds/startup.mp3" preload="auto"></audio>
+    <audio id="input-sound" src="assets/sounds/input.mp3" preload="auto"></audio>
+    <audio id="response-sound" src="assets/sounds/response.mp3" preload="auto"></audio>
+    <audio id="error-sound" src="assets/sounds/error.mp3" preload="auto"></audio>
 
+    <!-- Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-container">
-            <div class="disk"></div>
-            <div class="progress-bar">
-                <div class="progress"></div>
+        <div class="loader-grid">
+            <div class="grid-line vertical"></div>
+            <div class="grid-line horizontal"></div>
+            <div class="center-dot"></div>
+            <div class="loading-text">
+                <span class="loading-letter">L</span>
+                <span class="loading-letter">O</span>
+                <span class="loading-letter">A</span>
+                <span class="loading-letter">D</span>
+                <span class="loading-letter">I</span>
+                <span class="loading-letter">N</span>
+                <span class="loading-letter">G</span>
             </div>
-            <div class="loading-text">INITIALIZING AUTONOMOUS LEARNING CORE</div>
-            <div class="version">v2.3.7</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+                <div class="progress-text">0%</div>
+            </div>
+            <div class="version">SYSTEM v3.0.1</div>
         </div>
     </div>
 
+    <!-- Main 3D Container -->
     <div id="tron-container"></div>
 
-    <div id="hud">
-        <div class="hud-panel">
-            <div class="hud-header">SYSTEM STATUS</div>
+    <!-- System HUD -->
+    <div id="system-hud">
+        <div class="hud-panel core-status">
+            <div class="panel-header">CORE STATUS</div>
             <div class="hud-item">
-                <span class="hud-label">CORE TEMP:</span>
-                <span id="core-temp">37.2°C</span>
+                <div class="hud-label">INTEGRITY</div>
+                <div class="hud-value" id="core-integrity">100%</div>
+                <div class="hud-bar">
+                    <div class="bar-fill" id="integrity-bar"></div>
+                </div>
             </div>
             <div class="hud-item">
-                <span class="hud-label">MEMORY USAGE:</span>
-                <span id="memory-usage">42%</span>
-            </div>
-            <div class="hud-item">
-                <span class="hud-label">LEARNING RATE:</span>
-                <span id="learning-rate">0.82</span>
+                <div class="hud-label">TEMPERATURE</div>
+                <div class="hud-value" id="core-temp">36.5°C</div>
+                <div class="hud-bar">
+                    <div class="bar-fill" id="temp-bar"></div>
+                </div>
             </div>
         </div>
 
-        <div class="hud-panel">
-            <div class="hud-header">NEURAL NETWORK</div>
+        <div class="hud-panel neural-network">
+            <div class="panel-header">NEURAL MATRIX</div>
             <div class="hud-item">
-                <span class="hud-label">NODES:</span>
-                <span id="neural-nodes">1,847</span>
+                <div class="hud-label">NODES</div>
+                <div class="hud-value" id="neural-nodes">1,024</div>
             </div>
             <div class="hud-item">
-                <span class="hud-label">CONNECTIONS:</span>
-                <span id="neural-connections">28,419</span>
+                <div class="hud-label">CONNECTIONS</div>
+                <div class="hud-value" id="neural-connections">15,360</div>
             </div>
             <div class="hud-item">
-                <span class="hud-label">SESSION:</span>
-                <span id="session-id">TRON-ALC-9X4P2</span>
+                <div class="hud-label">LEARNING RATE</div>
+                <div class="hud-value" id="learning-rate">0.85</div>
+            </div>
+        </div>
+
+        <div class="hud-panel memory-core">
+            <div class="panel-header">MEMORY CORE</div>
+            <div class="hud-item">
+                <div class="hud-label">STORAGE</div>
+                <div class="hud-value" id="memory-usage">42%</div>
+                <div class="hud-bar">
+                    <div class="bar-fill" id="memory-bar"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">SESSION ID</div>
+                <div class="hud-value" id="session-id">TRON-AGI-7X2P9</div>
             </div>
         </div>
     </div>
 
-    <div id="console-container">
-        <div id="console-header">
-            <div class="console-tab active" data-tab="main">MAINFRAME</div>
-            <div class="console-tab" data-tab="memory">MEMORY CORE</div>
-            <div class="console-tab" data-tab="network">NEURAL NET</div>
+    <!-- Main Console -->
+    <div id="main-console">
+        <div class="console-header">
+            <div class="console-tabs">
+                <div class="tab active" data-tab="main">MAINFRAME</div>
+                <div class="tab" data-tab="memory">MEMORY ACCESS</div>
+                <div class="tab" data-tab="network">NEURAL VISUALIZER</div>
+            </div>
             <div class="console-controls">
-                <button id="save-btn">SAVE STATE</button>
-                <button id="reset-btn">RESET VIEW</button>
+                <button id="save-btn" class="control-btn">
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">SAVE STATE</span>
+                </button>
+                <button id="voice-btn" class="control-btn">
+                    <span class="btn-icon">🎤</span>
+                    <span class="btn-text">VOICE INPUT</span>
+                </button>
             </div>
         </div>
-        <div id="console">
-            <div id="output"></div>
-            <div id="input-container">
-                <input type="text" id="user-input" placeholder="DIRECT INPUT..." autocomplete="off">
-                <button id="submit">
+        <div class="console-body">
+            <div id="console-output"></div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="ENTER DIRECT INPUT..." autocomplete="off">
+                <button id="submit-btn" class="submit-btn">
                     <span>EXECUTE</span>
-                    <div class="pulse"></div>
+                    <div class="btn-pulse"></div>
                 </button>
-                <button id="voice-btn"></button>
             </div>
         </div>
     </div>
 
-    <div id="notification"></div>
+    <!-- System Notifications -->
+    <div id="system-notification"></div>
 
+    <!-- Scripts -->
+    <script src="three-tron.js"></script>
+    <script src="agi.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize system when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading progress
+            let progress = 0;
+            const progressInterval = setInterval(function() {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    
+                    // Initialize systems after loading
+                    setTimeout(initializeSystems, 500);
+                }
+                
+                document.querySelector('.progress-bar').style.width = progress + '%';
+                document.querySelector('.progress-text').textContent = Math.floor(progress) + '%';
+            }, 100);
+            
             // Play startup sound
             const startupSound = document.getElementById('startup-sound');
-            startupSound.volume = 0.3;
-            startupSound.play();
+            startupSound.volume = 0.4;
+            startupSound.play().catch(e => console.log("Audio playback prevented:", e));
+        });
 
-            // Initialize systems
-            setTimeout(() => {
+        function initializeSystems() {
+            try {
+                // Initialize 3D environment
                 initTronEnvironment();
+                
+                // Initialize AGI core
                 window.agi = new SelfLearningAGI();
                 
-                // Load saved state if available
-                if(localStorage.getItem('agiState')) {
-                    agi.loadState();
-                }
-
                 // Hide loading screen
                 document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => {
+                setTimeout(function() {
                     document.getElementById('loading-screen').style.display = 'none';
                 }, 1000);
-            }, 2000);
-        });
+                
+            } catch (error) {
+                console.error("System initialization failed:", error);
+                document.getElementById('loading-screen').innerHTML = `
+                    <div class="error-screen">
+                        <div class="error-code">SYSTEM ERROR 0x${Math.floor(Math.random() * 10000).toString(16)}</div>
+                        <div class="error-message">Failed to initialize AGI core</div>
+                        <button class="retry-btn" onclick="window.location.reload()">RETRY INITIALIZATION</button>
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
 </html>
