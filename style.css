@@ -1,4 +1,3 @@
-/* === TRON AGI CORE STYLES === */
 :root {
     --primary: #00f0ff;
     --primary-dark: #0088ff;
@@ -10,11 +9,6 @@
     --text-glow: 0 0 8px var(--primary), 0 0 16px rgba(0, 240, 255, 0.3);
     --text-glow-secondary: 0 0 8px var(--secondary), 0 0 16px rgba(255, 0, 240, 0.3);
     --font-main: 'Orbitron', 'Courier New', monospace;
-}
-
-@font-face {
-    font-family: 'Orbitron';
-    src: url('assets/fonts/tron.ttf') format('truetype');
 }
 
 * {
@@ -33,7 +27,6 @@ body {
     user-select: none;
 }
 
-/* === ANIMATIONS === */
 @keyframes pulse {
     0% { opacity: 0.6; }
     50% { opacity: 1; }
@@ -52,17 +45,6 @@ body {
     100% { transform: translateY(0); }
 }
 
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
-@keyframes scanline {
-    from { background-position: 0 0; }
-    to { background-position: 0 100vh; }
-}
-
-/* === LOADING SCREEN === */
 #loading-screen {
     position: fixed;
     top: 0;
@@ -125,19 +107,6 @@ body {
     letter-spacing: 5px;
     text-shadow: var(--text-glow);
 }
-
-.loading-letter {
-    display: inline-block;
-    animation: float 2s infinite;
-}
-
-.loading-letter:nth-child(1) { animation-delay: 0.1s; }
-.loading-letter:nth-child(2) { animation-delay: 0.2s; }
-.loading-letter:nth-child(3) { animation-delay: 0.3s; }
-.loading-letter:nth-child(4) { animation-delay: 0.4s; }
-.loading-letter:nth-child(5) { animation-delay: 0.5s; }
-.loading-letter:nth-child(6) { animation-delay: 0.6s; }
-.loading-letter:nth-child(7) { animation-delay: 0.7s; }
 
 .progress-container {
     position: absolute;
@@ -209,14 +178,12 @@ body {
     box-shadow: 0 0 15px var(--error);
 }
 
-/* === 3D CONTAINER === */
 #tron-container {
     position: absolute;
     width: 100%;
     height: 100%;
 }
 
-/* === SYSTEM HUD === */
 #system-hud {
     position: absolute;
     top: 20px;
@@ -278,7 +245,6 @@ body {
     transition: width 0.5s ease;
 }
 
-/* === MAIN CONSOLE === */
 #main-console {
     position: absolute;
     bottom: 20px;
@@ -450,7 +416,6 @@ body {
     animation: pulse-fast 1s infinite;
 }
 
-/* === SYSTEM NOTIFICATION === */
 #system-notification {
     position: absolute;
     top: 20px;
@@ -467,7 +432,6 @@ body {
     z-index: 200;
 }
 
-/* === SCROLLBAR === */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -486,7 +450,6 @@ body {
     background: #00ffff;
 }
 
-/* === RESPONSIVE DESIGN === */
 @media (max-width: 768px) {
     #system-hud {
         flex-direction: column;
