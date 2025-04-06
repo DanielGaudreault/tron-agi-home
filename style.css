@@ -6,7 +6,7 @@ body {
 
 .tron-grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(20, 1fr);
     gap: 2px;
     margin: 20px;
 }
@@ -15,6 +15,7 @@ body {
     background-color: #00FF00; /* Active cell color */
     padding: 10px;
     border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.5);
 }
 
 .info-panel {
@@ -22,9 +23,26 @@ body {
     padding: 10px;
     border: 1px solid #00FF00;
     border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.5);
 }
 
-#learning-rate, #self-awareness {
+#grid-status, #self-awareness, #learning-rate {
     font-size: 1.2em;
     margin-bottom: 10px;
+}
+
+.tron-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background-color: #141414;
+    border-top: 1px solid #00FF00;
+    text-align: center;
+}
+
+.tron-footer p {
+    font-size: 0.8em;
+    color: #666;
 }
