@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tron AGI</title>
-    <link rel="stylesheet" href="style.css">
+    <title>AGI Tron Theme</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container">
-        <h1>TRON AGI</h1>
-        <p>Enter a number to teach me, and I'll predict!</p>
-        <input type="number" id="input" placeholder="Enter a number">
-        <input type="number" id="target" placeholder="What should I predict?">
-        <button onclick="trainAndPredict()">Train & Predict</button>
-        <p id="result">Prediction: Waiting...</p>
+    <div class="tron-grid">
+        <!-- Tron grid cells will be generated dynamically -->
     </div>
-    <div id="three-container"></div>
-    <script type="module" src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <div class="info-panel">
+        <h2>AGI System Status</h2>
+        <p id="learning-rate">Learning Rate: <span id="lr-value">0</span></p>
+        <p id="self-awareness">Self-Awareness: <span id="sa-value">Offline</span></p>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
