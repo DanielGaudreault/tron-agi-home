@@ -3,80 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON AGI INTERFACE</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="preload" href="assets/fonts/tron.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="assets/fonts/digital.ttf" as="font" type="font/ttf" crossorigin>
+    <title>AGI with Tron Integration</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tronweb3/tronwallet-adapter-vue/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tronweb@4.1.0/dist/TronWeb.js"></script>
 </head>
 <body>
-    <div id="grid-container">
-        <canvas id="grid-canvas"></canvas>
-    </div>
-    
-    <audio id="startup-sound" src="sounds/startup.mp3" preload="auto"></audio>
-    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
-    <audio id="grid-sound" src="sounds/grid.mp3" preload="auto" loop></audio>
-    
-    <div id="main-content">
-        <div class="header">
-            <h1>TRON AGI INTERFACE</h1>
-            <div class="subtitle">CLIENT-SIDE ARTIFICIAL GENERAL INTELLIGENCE</div>
-            <div class="version">SYSTEM v3.1.4</div>
-        </div>
-        
-        <div id="chat-container">
-            <div class="message ai-message">
-                <div class="message-header">SYSTEM</div>
-                <div class="message-content">Initializing neural network...</div>
-            </div>
-        </div>
-        
-        <div id="input-container">
-            <input type="text" id="user-input" placeholder="ENTER QUERY..." autocomplete="off" spellcheck="false">
-            <button class="btn" id="submit-btn">
-                <span class="btn-text">SUBMIT</span>
-                <span class="btn-icon">></span>
-            </button>
-            <button class="btn" id="reset-btn">
-                <span class="btn-text">RESET</span>
-                <span class="btn-icon">↻</span>
-            </button>
-        </div>
-        
-        <div id="status-panel">
-            <div class="status-item">
-                <div class="status-label">SYSTEM STATUS</div>
-                <div class="status-value" id="status-text">BOOTING</div>
-                <div class="meter">
-                    <div class="meter-fill" id="status-meter"></div>
+    <div class="container">
+        <header>
+            <h1>AGI Tron Interface</h1>
+            <div id="wallet-status">Wallet not connected</div>
+            <button id="connect-wallet">Connect Tron Wallet</button>
+        </header>
+
+        <div class="main-content">
+            <div class="agi-console">
+                <div id="agi-output" class="output"></div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Ask the AGI anything...">
+                    <button id="send-btn">Send</button>
                 </div>
             </div>
-            <div class="status-item">
-                <div class="status-label">NEURAL LOAD</div>
-                <div class="status-value" id="load-text">0%</div>
-                <div class="meter">
-                    <div class="meter-fill" id="load-meter"></div>
+
+            <div class="tron-panel">
+                <h2>Tron Blockchain Interaction</h2>
+                <div class="tron-actions">
+                    <button id="get-balance">Get TRX Balance</button>
+                    <button id="get-smart-contracts">Query Smart Contracts</button>
                 </div>
-            </div>
-            <div class="status-item">
-                <div class="status-label">MEMORY USAGE</div>
-                <div class="status-value" id="memory-text">0KB</div>
-                <div class="meter">
-                    <div class="meter-fill" id="memory-meter"></div>
-                </div>
+                <div id="tron-output" class="output"></div>
             </div>
         </div>
-        
-        <div id="debug-console">
-            <div class="console-header">SYSTEM LOG</div>
-            <div class="console-output" id="console-output"></div>
+
+        <div class="memory-panel">
+            <h3>AGI Memory Context</h3>
+            <div id="memory-context" class="output"></div>
         </div>
     </div>
 
-    <script src="js/tronGrid.js" defer></script>
-    <script src="js/agiSystem.js" defer></script>
-    <script src="js/uiController.js" defer></script>
-    <script src="js/main.js" defer></script>
+    <script src="tron-utils.js"></script>
+    <script src="agi.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
