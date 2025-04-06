@@ -3,15 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON ULTIMATE</title>
+    <title>TRON: Grid Revolution</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/LuminosityHighPassShader.js"></script>
 </head>
 <body>
     <div id="loading-screen">
@@ -25,32 +19,16 @@
     <div id="start-screen">
         <div class="title-container">
             <h1 class="title-glitch">TRON</h1>
-            <h2 class="subtitle">IDENTITY DISK INITIALIZATION</h2>
+            <h2 class="subtitle">LIGHT CYCLE PROTOCOL</h2>
         </div>
         
         <div class="form-container">
             <div class="input-group">
-                <label for="player-name">USER ALIAS</label>
-                <input type="text" id="player-name" maxlength="12" placeholder="ENTER DESIGNATION">
-            </div>
-            
-            <div class="color-picker">
-                <label>PROGRAM SCHEMA</label>
-                <div class="color-options">
-                    <div class="color-option" data-color="#00FFFF" style="background-color: #00FFFF;"></div>
-                    <div class="color-option" data-color="#FF00FF" style="background-color: #FF00FF;"></div>
-                    <div class="color-option" data-color="#FFFF00" style="background-color: #FFFF00;"></div>
-                    <div class="color-option" data-color="#FF8800" style="background-color: #FF8800;"></div>
-                </div>
+                <input type="text" id="player-name" maxlength="12" placeholder="ENTER USERNAME">
             </div>
             
             <button id="enter-button">
-                <span class="button-text">ACTIVATE</span>
-                <span class="button-lights">
-                    <span class="light-segment"></span>
-                    <span class="light-segment"></span>
-                    <span class="light-segment"></span>
-                </span>
+                ENTER THE GRID
             </button>
         </div>
     </div>
@@ -61,9 +39,8 @@
             <div class="player-score">ENERGY: 100%</div>
         </div>
         <div class="game-stats">
-            <div class="stat"><span class="stat-label">PROGRAMS:</span> <span class="stat-value" id="player-count">1</span></div>
-            <div class="stat"><span class="stat-label">COORDS:</span> <span class="stat-value" id="player-position">0,0</span></div>
-            <div class="stat"><span class="stat-label">CYCLE:</span> <span class="stat-value" id="game-time">00:00</span></div>
+            <div class="stat"><span>PLAYERS:</span> <span id="player-count">1</span></div>
+            <div class="stat"><span>POSITION:</span> <span id="player-position">0,0</span></div>
         </div>
     </div>
     
