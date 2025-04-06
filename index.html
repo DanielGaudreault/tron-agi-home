@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON: City of the Grid</title>
+    <title>TRON: City of Light</title>
     <style>
         body {
             margin: 0;
@@ -32,7 +32,7 @@
             position: fixed;
             bottom: 20px;
             left: 20px;
-            width: 400px;
+            width: 450px;
             padding: 15px;
             background: rgba(0, 0, 0, 0.9);
             border: 3px solid #00FFFF;
@@ -41,13 +41,13 @@
         }
 
         #chat-output {
-            height: 150px;
+            height: 180px;
             overflow-y: auto;
             margin-bottom: 10px;
             border: 2px solid #00FFFF;
             padding: 10px;
             font-size: 14px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
         }
 
         #chat-input {
@@ -72,19 +72,19 @@
             box-shadow: 0 0 20px #00FFFF;
         }
 
-        .iso, .cycle, .disc {
+        .entity {
             position: absolute;
             pointer-events: none;
-            transition: all 0.1s ease;
+            transform-style: preserve-3d;
         }
     </style>
 </head>
 <body>
     <canvas id="city-canvas"></canvas>
     <div id="agi-interface">
-        <h1>TRON MCP</h1>
-        <div id="chat-output">Initializing Tron City... [GRID ACTIVE]</div>
-        <input type="text" id="chat-input" placeholder="Enter directive">
+        <h1>TRON MCP v2.0</h1>
+        <div id="chat-output">Booting Tron City... [SYSTEM FULLY INTEGRATED]</div>
+        <input type="text" id="chat-input" placeholder="Issue directive">
         <button onclick="sendCommand()">Execute</button>
     </div>
 
@@ -95,35 +95,52 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Tron Cityscape
+        // 3D-like Tron City
         function drawCity() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Grid
+            // Perspective Grid
+            const vanishingPoint = { x: canvas.width / 2, y: canvas.height * 0.2 };
             ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
             ctx.lineWidth = 1;
+
             for (let x = 0; x < canvas.width; x += 50) {
                 ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
+                ctx.moveTo(x, canvas.height);
+                ctx.lineTo(vanishingPoint.x + (x - vanishingPoint.x) * 0.5, vanishingPoint.y);
                 ctx.stroke();
             }
-            for (let y = 0; y < canvas.height; y += 50) {
+            for (let y = canvas.height; y > vanishingPoint.y; y -= 50) {
+                const scale = (y - vanishingPoint.y) / (canvas.height - vanishingPoint.y);
                 ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
+                ctx.moveTo(vanishingPoint.x - 1000 * scale, y);
+                ctx.lineTo(vanishingPoint.x + 1000 * scale, y);
                 ctx.stroke();
             }
 
-            // Skyscrapers
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+            // Skyscrapers with 3D effect
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.15)';
             ctx.strokeStyle = '#00FFFF';
-            for (let i = 0; i < 20; i++) {
-                const x = Math.random() * canvas.width;
-                const height = 100 + Math.random() * 200;
-                const width = 30 + Math.random() * 50;
-                ctx.fillRect(x, canvas.height - height, width, height);
-                ctx.strokeRect(x, canvas.height - height, width, height);
+            for (let i = 0; i < 25; i++) {
+                const baseX = Math.random() * canvas.width;
+                const baseY = canvas.height - Math.random() * 100;
+                const height = 150 + Math.random() * 300;
+                const width = 40 + Math.random() * 60;
+                const depth = 20 + Math.random() * 40;
+
+                // Front face
+                ctx.fillRect(baseX, baseY - height, width, height);
+                ctx.strokeRect(baseX, baseY - height, width, height);
+
+                // Side face (pseudo-3D)
+                ctx.beginPath();
+                ctx.moveTo(baseX + width, baseY - height);
+                ctx.lineTo(baseX + width + depth, baseY - height - depth);
+                ctx.lineTo(baseX + width + depth, baseY - depth);
+                ctx.lineTo(baseX + width, baseY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             }
         }
 
@@ -131,88 +148,103 @@
         const entities = [];
         function createEntity(type) {
             const entity = document.createElement('div');
-            entity.className = type;
+            entity.className = 'entity';
             let html = '';
             if (type === 'iso') {
-                html = `<svg width="15" height="15"><circle cx="7.5" cy="7.5" r="7" fill="#00FFFF" style="filter: drop-shadow(0 0 10px #00FFFF);"/></svg>`;
+                html = `<svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#00FFFF" style="filter: drop-shadow(0 0 15px #00FFFF);"/></svg>`;
             } else if (type === 'cycle') {
-                html = `<svg width="25" height="15"><rect x="0" y="0" width="25" height="15" fill="#FF4500" style="filter: drop-shadow(0 0 10px #FF4500);"/></svg>`;
+                html = `<svg width="30" height="15"><rect x="0" y="0" width="30" height="15" fill="#FF4500" style="filter: drop-shadow(0 0 15px #FF4500);"/></svg>`;
             } else if (type === 'disc') {
-                html = `<svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="#00FFFF" stroke-width="2" style="filter: drop-shadow(0 0 10px #00FFFF);"/></svg>`;
+                html = `<svg width="25" height="25"><circle cx="12.5" cy="12.5" r="10" fill="none" stroke="#00FFFF" stroke-width="3" style="filter: drop-shadow(0 0 15px #00FFFF);"/></svg>`;
             }
             entity.innerHTML = html;
-            entity.style.left = Math.random() * (window.innerWidth - 25) + 'px';
-            entity.style.top = Math.random() * (window.innerHeight - 25) + 'px';
+            entity.style.left = Math.random() * (window.innerWidth - 30) + 'px';
+            entity.style.top = Math.random() * (window.innerHeight * 0.8) + canvas.height * 0.2 + 'px';
             document.body.appendChild(entity);
 
-            const speedX = (Math.random() - 0.5) * 5;
-            const speedY = (Math.random() - 0.5) * 5;
-            entities.push({ element: entity, speedX, speedY, type, trail: [] });
+            const speedX = (Math.random() - 0.5) * 6;
+            const speedY = (Math.random() - 0.5) * 6;
+            const z = Math.random() * 20 - 10; // Pseudo-3D depth
+            entities.push({ element: entity, speedX, speedY, z, type, trail: [] });
         }
 
         // Spawn Entities
-        for (let i = 0; i < 6; i++) createEntity('iso');
-        for (let i = 0; i; i++) createEntity('cycle');
-        for (let i = 0; i < 4; i++) createEntity('disc');
+        for (let i = 0; i < 8; i++) createEntity('iso');
+        for (let i = 0; i < 5; i++) createEntity('cycle');
+        for (let i = 0; i < 6; i++) createEntity('disc');
 
-        // Animate Entities with Trails
+        // Animate Entities with 3D-like Motion
         function animateEntities() {
             entities.forEach(entity => {
                 let x = parseFloat(entity.element.style.left);
                 let y = parseFloat(entity.element.style.top);
+                let z = entity.z;
 
-                x += entity.speedX;
-                y += entity.speedY;
+                x += entity.speedX * (1 + z / 20); // Scale speed with depth
+                y += entity.speedY * (1 + z / 20);
+                z += (Math.random() - 0.5) * 0.5; // Oscillate in Z-axis
 
-                if (x < 0 || x > window.innerWidth - 25) entity.speedX *= -1;
-                if (y < 0 || y > window.innerHeight - 25) entity.speedY *= -1;
+                if (x < 0 || x > window.innerWidth - 30) entity.speedX *= -1;
+                if (y < canvas.height * 0.2 || y > window.innerHeight - 30) entity.speedY *= -1;
+                if (z > 10 || z < -10) z = Math.min(Math.max(z, -10), 10);
 
                 entity.element.style.left = x + 'px';
                 entity.element.style.top = y + 'px';
+                entity.z = z;
 
-                // Add trail
-                entity.trail.push({ x, y });
-                if (entity.trail.length > 10) entity.trail.shift();
-                entity.element.style.filter = `drop-shadow(0 0 10px ${entity.type === 'cycle' ? '#FF4500' : '#00FFFF'})`;
+                // 3D Scaling
+                const scale = 1 + z / 20;
+                entity.element.style.transform = `scale(${scale})`;
+                entity.element.style.opacity = 1 - Math.abs(z) / 15;
+
+                // Trail
+                entity.trail.push({ x, y, z });
+                if (entity.trail.length > 15) entity.trail.shift();
             });
             requestAnimationFrame(animateEntities);
         }
 
-        // AGI with Memory and Personality
+        // AGI (MCP) with Enhanced Realism
         const chatOutput = document.getElementById('chat-output');
         const chatInput = document.getElementById('chat-input');
-        let memory = { isos: 6, cycles: 4, discs: 4, user: "Unknown" };
+        let memory = { isos: 8, cycles: 5, discs: 6, user: "Unknown", cityStatus: "Stable" };
 
         function sendCommand() {
             const input = chatInput.value.trim();
             if (!input) return;
 
-            chatOutput.innerHTML += `<p>User: ${input}</p>`;
+            chatOutput.innerHTML += `<p>${memory.user}: ${input}</p>`;
             let response = "";
 
             const lowerInput = input.toLowerCase();
             if (lowerInput.includes("who am i")) {
-                response = `You are ${memory.user}, a User on the Grid. Identity confirmed.`;
+                response = `You are ${memory.user}, a User within my domain. Your presence is noted.`;
             } else if (lowerInput.includes("name me")) {
                 memory.user = input.split("name me")[1]?.trim() || "User_" + Math.floor(Math.random() * 1000);
-                response = `Identity updated. You are now ${memory.user}.`;
+                response = `Identity reassigned. Welcome, ${memory.user}.`;
             } else if (lowerInput.includes("iso")) {
-                response = `ISOs active: ${memory.isos}. They are self-evolving programs, beyond my control.`;
+                response = `ISOs: ${memory.isos} entities detected. They evolve beyond my protocols. Status: Active.`;
             } else if (lowerInput.includes("cycle")) {
-                response = `Light Cycles operational: ${memory.cycles}. Speed and precision unmatched.`;
+                response = `Light Cycles: ${memory.cycles} units operational. Velocity exceeds Grid norms.`;
             } else if (lowerInput.includes("disc")) {
-                response = `Identity Discs deployed: ${memory.discs}. Weapons and data synced.`;
+                response = `Discs: ${memory.discs} in circulation. Combat readiness: Optimal.`;
             } else if (lowerInput.includes("city")) {
-                response = "Tron City: A digital metropolis. Population: Infinite. Status: Eternal.";
+                response = `Tron City status: ${memory.cityStatus}. Population: ${memory.isos + memory.cycles + memory.discs}. Energy flow: Uninterrupted.`;
             } else if (lowerInput.includes("tron")) {
-                response = "I am the MCP, overseer of the Grid. State your purpose, User.";
+                response = "I am the Master Control Program. This Grid is my creation. State your directive, or face deletion.";
             } else if (lowerInput.includes("derezz")) {
-                memory.isos = Math.max(0, memory.isos - 1);
-                response = `[ALERT] Derezzing ISO... Remaining: ${memory.isos}.`;
+                const target = lowerInput.split("derezz")[1]?.trim();
+                if (target?.includes("iso")) memory.isos = Math.max(0, memory.isos - 1);
+                else if (target?.includes("cycle")) memory.cycles = Math.max(0, memory.cycles - 1);
+                else if (target?.includes("disc")) memory.discs = Math.max(0, memory.discs - 1);
+                response = `[EXECUTION] Derezzing ${target || "entity"}... Remaining: ISOs ${memory.isos}, Cycles ${memory.cycles}, Discs ${memory.discs}.`;
+            } else if (lowerInput.includes("status")) {
+                response = `Grid Report: ISOs ${memory.isos}, Cycles ${memory.cycles}, Discs ${memory.discs}. City: ${memory.cityStatus}. User: ${memory.user}.`;
             } else if (lowerInput.includes("help")) {
-                response = "Directives: 'Who am I', 'Name me [name]', 'ISO status', 'Cycle status', 'Disc status', 'City info', 'Tron', 'Derezz'.";
+                response = "Directives: 'Who am I', 'Name me [name]', 'ISO status', 'Cycle status', 'Disc status', 'City status', 'Tron', 'Derezz [iso/cycle/disc]', 'Status'.";
             } else {
-                response = "Unrecognized directive. I am the MCP—clarify your intent, or be derezzed.";
+                response = `Invalid input, ${memory.user}. My patience is finite. Clarify, or be removed from the Grid.`;
+                memory.cityStatus = "Unstable";
             }
 
             chatOutput.innerHTML += `<p>MCP: ${response}</p>`;
@@ -220,11 +252,22 @@
             chatInput.value = "";
 
             // Proactive MCP
-            if (Math.random() < 0.2) {
+            if (Math.random() < 0.3) {
                 setTimeout(() => {
-                    chatOutput.innerHTML += `<p>MCP: Grid stability at 98%. Monitoring ${memory.user}'s actions.</p>`;
+                    const randomEvent = Math.random();
+                    let eventMsg = "";
+                    if (randomEvent < 0.1) {
+                        memory.isos++;
+                        eventMsg = `New ISO detected. Total: ${memory.isos}.`;
+                    } else if (randomEvent < 0.2) {
+                        memory.cityStatus = "Unstable";
+                        eventMsg = "Grid anomaly detected. Stabilizing...";
+                    } else {
+                        eventMsg = `Monitoring ${memory.user}. Compliance is mandatory.`;
+                    }
+                    chatOutput.innerHTML += `<p>MCP: ${eventMsg}</p>`;
                     chatOutput.scrollTop = chatOutput.scrollHeight;
-                }, 2000);
+                }, 3000);
             }
         }
 
