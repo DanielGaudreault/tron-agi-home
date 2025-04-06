@@ -1,13 +1,15 @@
-/* Tron Grid Background */
+/* Tron Grid Core */
 body {
-    font-family: 'Courier New', monospace;
+    font-family: 'Orbitron', sans-serif;
     background-color: #000;
     color: #0ff;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-    position: relative;
+    overflow: hidden;
+    text-align: center;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 .grid-lines {
     position: fixed;
@@ -18,93 +20,64 @@ body {
     background: 
         linear-gradient(to right, #000 1px, transparent 1px),
         linear-gradient(to bottom, #000 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-size: 40px 40px;
     z-index: -1;
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 header {
-    text-align: center;
     padding: 20px;
     border-bottom: 1px solid #0ff;
-}
-
-h1, h2 {
     text-shadow: 0 0 10px #0ff;
 }
 
-nav {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-}
-
-nav a {
-    color: #0ff;
-    text-decoration: none;
-    border: 1px solid #0ff;
-    padding: 10px 20px;
-    transition: all 0.3s;
-}
-
-nav a:hover {
-    background-color: #0ff;
-    color: #000;
-}
-
-section {
-    padding: 30px;
-    margin: 20px 0;
-    border: 1px solid #0ff;
-    border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-/* Program Avatar (Pure CSS) */
-.program-avatar {
-    width: 100px;
-    height: 100px;
-    margin: 20px auto;
-    background: #0ff;
-    border-radius: 50%;
+/* ISOs (Animated Digital Lifeforms) */
+.grid-core {
     position: relative;
-    box-shadow: 0 0 20px #0ff;
+    height: 300px;
+    margin: 50px auto;
+    border: 2px dashed #0ff;
+    border-radius: 50%;
+    width: 300px;
 }
 
-.program-avatar::before {
-    content: "⚡";
+.iso {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 40px;
-    color: #000;
+    font-size: 24px;
+    color: #ff00ff; /* ISO Purple */
+    animation: float 5s infinite ease-in-out;
+    text-shadow: 0 0 15px #ff00ff;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-    margin: 0 auto;
+@keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(50px, -30px); }
+    50% { transform: translate(-30px, 40px); }
+    75% { transform: translate(40px, 20px); }
 }
 
-input, button {
-    padding: 10px;
-    background: #000;
-    color: #0ff;
+/* Control Panel */
+.control-panel {
+    margin: 20px auto;
+    padding: 20px;
     border: 1px solid #0ff;
+    max-width: 500px;
 }
 
 button {
+    background: #000;
+    color: #0ff;
+    border: 1px solid #0ff;
+    padding: 15px 30px;
+    margin: 10px;
+    font-family: 'Orbitron', sans-serif;
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -112,21 +85,26 @@ button {
 button:hover {
     background: #0ff;
     color: #000;
+    box-shadow: 0 0 20px #0ff;
 }
 
-footer {
-    text-align: center;
-    padding: 20px;
-    border-top: 1px solid #0ff;
+.output-log {
+    height: 100px;
+    border: 1px solid #0ff;
+    margin-top: 20px;
+    overflow-y: auto;
+    padding: 10px;
+    text-align: left;
+    font-size: 14px;
 }
 
-/* Glow Effect */
-#glow-btn {
-    animation: glow 2s infinite;
+/* AGI Activation */
+#agi-status {
+    color: #ff00ff;
+    animation: pulse 2s infinite;
 }
 
-@keyframes glow {
-    0% { box-shadow: 0 0 5px #0ff; }
-    50% { box-shadow: 0 0 20px #0ff; }
-    100% { box-shadow: 0 0 5px #0ff; }
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; text-shadow: 0 0 10px #ff00ff; }
 }
