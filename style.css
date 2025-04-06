@@ -10,3 +10,29 @@ canvas {
   border: 2px solid cyan;
   background-color: black;
 }
+
+#console {
+  margin-top: 20px;
+}
+
+input {
+  background-color: black;
+  color: cyan;
+  border: 1px solid cyan;
+  padding: 5px;
+  font-family: monospace;
+}
+
+button {
+  background-color: cyan;
+  color: black;
+  padding: 5px 10px;
+  border: none;
+  font-family: monospace;
+  cursor: pointer;
+}
+
+pre {
+  color: magenta;
+  margin-top: 10px;
+}
