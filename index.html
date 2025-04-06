@@ -4,687 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRON AGI INTERFACE</title>
-    <style>
-        :root {
-            --neon-blue: #0ff;
-            --neon-glow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
-            --grid-opacity: 0.15;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Courier New', monospace;
-            color: var(--neon-blue);
-        }
-        
-        #grid-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        
-        #grid-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #main-content {
-            padding: 2rem;
-            max-width: 900px;
-            margin: 0 auto;
-            text-shadow: var(--neon-glow);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--neon-blue);
-            padding-bottom: 1rem;
-        }
-        
-        h1 {
-            color: var(--neon-blue);
-            margin: 0;
-            font-size: 2.5rem;
-            animation: flicker 2s infinite alternate;
-        }
-        
-        @keyframes flicker {
-            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-                text-shadow: var(--neon-glow);
-                opacity: 1;
-            }
-            20%, 24%, 55% {
-                text-shadow: none;
-                opacity: 0.7;
-            }
-        }
-        
-        .subtitle {
-            margin-top: 0.5rem;
-            font-size: 1rem;
-            color: rgba(0, 255, 255, 0.7);
-        }
-        
-        #chat-container {
-            background-color: rgba(0, 20, 30, 0.5);
-            border: 1px solid var(--neon-blue);
-            border-radius: 5px;
-            padding: 1rem;
-            height: 400px;
-            overflow-y: auto;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-        }
-        
-        .message {
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            border-radius: 3px;
-        }
-        
-        .user-message {
-            background-color: rgba(0, 50, 70, 0.3);
-            border-left: 3px solid #00aaff;
-            padding-left: 1rem;
-        }
-        
-        .ai-message {
-            background-color: rgba(0, 70, 50, 0.3);
-            border-left: 3px solid var(--neon-blue);
-            padding-left: 1rem;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { border-left-color: var(--neon-blue); }
-            50% { border-left-color: rgba(0, 255, 255, 0.3); }
-            100% { border-left-color: var(--neon-blue); }
-        }
-        
-        .message-header {
-            font-weight: bold;
-            margin-bottom: 0.3rem;
-            color: var(--neon-blue);
-        }
-        
-        #input-container {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        #user-input {
-            flex-grow: 1;
-            background-color: rgba(0, 10, 20, 0.7);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 0.8rem;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            border-radius: 3px;
-        }
-        
-        #user-input:focus {
-            outline: none;
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
-        
-        .btn {
-            background-color: transparent;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 0.8rem 1.5rem;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            border-radius: 3px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-        }
-        
-        .btn:hover {
-            background-color: rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 15px var(--neon-blue);
-        }
-        
-        .btn:active {
-            transform: scale(0.95);
-        }
-        
-        #status-panel {
-            display: flex;
-            justify-content: space-between;
-            background-color: rgba(0, 15, 25, 0.5);
-            padding: 1rem;
-            border: 1px solid var(--neon-blue);
-            border-radius: 5px;
-        }
-        
-        .status-item {
-            text-align: center;
-            flex: 1;
-        }
-        
-        .status-label {
-            font-size: 0.9rem;
-            color: rgba(0, 255, 255, 0.7);
-            margin-bottom: 0.3rem;
-        }
-        
-        .status-value {
-            font-size: 1.2rem;
-            color: var(--neon-blue);
-            font-weight: bold;
-        }
-        
-        .meter {
-            height: 5px;
-            background-color: rgba(0, 255, 255, 0.2);
-            margin-top: 0.5rem;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .meter-fill {
-            height: 100%;
-            background-color: var(--neon-blue);
-            width: 0%;
-            transition: width 0.5s;
-            box-shadow: 0 0 5px var(--neon-blue);
-        }
-        
-        /* Scrollbar styling */
-        #chat-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        #chat-container::-webkit-scrollbar-track {
-            background: rgba(0, 10, 20, 0.5);
-        }
-        
-        #chat-container::-webkit-scrollbar-thumb {
-            background-color: var(--neon-blue);
-            border-radius: 4px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="preload" href="assets/fonts/tron.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/digital.ttf" as="font" type="font/ttf" crossorigin>
 </head>
 <body>
     <div id="grid-container">
         <canvas id="grid-canvas"></canvas>
     </div>
     
+    <audio id="startup-sound" src="sounds/startup.mp3" preload="auto"></audio>
+    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="grid-sound" src="sounds/grid.mp3" preload="auto" loop></audio>
+    
     <div id="main-content">
         <div class="header">
             <h1>TRON AGI INTERFACE</h1>
             <div class="subtitle">CLIENT-SIDE ARTIFICIAL GENERAL INTELLIGENCE</div>
+            <div class="version">SYSTEM v3.1.4</div>
         </div>
         
         <div id="chat-container">
             <div class="message ai-message">
                 <div class="message-header">SYSTEM</div>
-                <div class="message-content">Initializing neural network... Ready for interaction.</div>
+                <div class="message-content">Initializing neural network...</div>
             </div>
         </div>
         
         <div id="input-container">
-            <input type="text" id="user-input" placeholder="Enter your query..." autocomplete="off">
-            <button class="btn" id="submit-btn">Submit</button>
-            <button class="btn" id="reset-btn">Reset</button>
+            <input type="text" id="user-input" placeholder="ENTER QUERY..." autocomplete="off" spellcheck="false">
+            <button class="btn" id="submit-btn">
+                <span class="btn-text">SUBMIT</span>
+                <span class="btn-icon">></span>
+            </button>
+            <button class="btn" id="reset-btn">
+                <span class="btn-text">RESET</span>
+                <span class="btn-icon">↻</span>
+            </button>
         </div>
         
         <div id="status-panel">
             <div class="status-item">
-                <div class="status-label">System Status</div>
-                <div class="status-value" id="status-text">Operational</div>
+                <div class="status-label">SYSTEM STATUS</div>
+                <div class="status-value" id="status-text">BOOTING</div>
                 <div class="meter">
                     <div class="meter-fill" id="status-meter"></div>
                 </div>
             </div>
             <div class="status-item">
-                <div class="status-label">Neural Load</div>
+                <div class="status-label">NEURAL LOAD</div>
                 <div class="status-value" id="load-text">0%</div>
                 <div class="meter">
                     <div class="meter-fill" id="load-meter"></div>
                 </div>
             </div>
             <div class="status-item">
-                <div class="status-label">Memory Usage</div>
+                <div class="status-label">MEMORY USAGE</div>
                 <div class="status-value" id="memory-text">0KB</div>
                 <div class="meter">
                     <div class="meter-fill" id="memory-meter"></div>
                 </div>
             </div>
         </div>
+        
+        <div id="debug-console">
+            <div class="console-header">SYSTEM LOG</div>
+            <div class="console-output" id="console-output"></div>
+        </div>
     </div>
 
-    <script>
-        // TRON Grid Animation
-        class TronGrid {
-            constructor(canvas) {
-                this.canvas = canvas;
-                this.ctx = canvas.getContext('2d');
-                this.resize();
-                
-                this.gridSize = 40;
-                this.lines = [];
-                this.animatedLines = [];
-                this.cells = [];
-                
-                this.initGrid();
-                this.initAnimatedLines();
-                this.initCells();
-                
-                window.addEventListener('resize', () => this.resize());
-            }
-            
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-                this.initGrid();
-            }
-            
-            initGrid() {
-                this.lines = [];
-                
-                // Vertical lines
-                for (let x = 0; x < this.canvas.width; x += this.gridSize) {
-                    this.lines.push({
-                        x1: x, y1: 0,
-                        x2: x, y2: this.canvas.height,
-                        alpha: Math.random() * 0.1 + 0.05
-                    });
-                }
-                
-                // Horizontal lines
-                for (let y = 0; y < this.canvas.height; y += this.gridSize) {
-                    this.lines.push({
-                        x1: 0, y1: y,
-                        x2: this.canvas.width, y2: y,
-                        alpha: Math.random() * 0.1 + 0.05
-                    });
-                }
-            }
-            
-            initAnimatedLines() {
-                for (let i = 0; i < 15; i++) {
-                    this.addAnimatedLine();
-                }
-            }
-            
-            addAnimatedLine() {
-                const side = Math.floor(Math.random() * 4);
-                let x, y, angle;
-                
-                switch(side) {
-                    case 0: // top
-                        x = Math.random() * this.canvas.width;
-                        y = 0;
-                        angle = Math.PI / 2 + (Math.random() - 0.5) * Math.PI / 4;
-                        break;
-                    case 1: // right
-                        x = this.canvas.width;
-                        y = Math.random() * this.canvas.height;
-                        angle = Math.PI + (Math.random() - 0.5) * Math.PI / 4;
-                        break;
-                    case 2: // bottom
-                        x = Math.random() * this.canvas.width;
-                        y = this.canvas.height;
-                        angle = Math.PI * 1.5 + (Math.random() - 0.5) * Math.PI / 4;
-                        break;
-                    case 3: // left
-                        x = 0;
-                        y = Math.random() * this.canvas.height;
-                        angle = (Math.random() - 0.5) * Math.PI / 4;
-                        break;
-                }
-                
-                this.animatedLines.push({
-                    x, y,
-                    length: Math.random() * 150 + 50,
-                    angle,
-                    speed: Math.random() * 3 + 1,
-                    alpha: Math.random() * 0.2 + 0.1,
-                    life: Math.random() * 100 + 100,
-                    maxLife: Math.random() * 100 + 100
-                });
-            }
-            
-            initCells() {
-                const cellCount = Math.floor((this.canvas.width * this.canvas.height) / (this.gridSize * this.gridSize * 10));
-                
-                for (let i = 0; i < cellCount; i++) {
-                    this.cells.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        size: Math.random() * 3 + 1,
-                        alpha: Math.random() * 0.3 + 0.1,
-                        pulseSpeed: Math.random() * 0.02 + 0.01,
-                        pulsePhase: Math.random() * Math.PI * 2
-                    });
-                }
-            }
-            
-            update() {
-                // Update animated lines
-                for (let i = this.animatedLines.length - 1; i >= 0; i--) {
-                    const line = this.animatedLines[i];
-                    
-                    line.x += Math.cos(line.angle) * line.speed;
-                    line.y += Math.sin(line.angle) * line.speed;
-                    line.life--;
-                    
-                    if (line.life <= 0 || 
-                        line.x < -100 || line.x > this.canvas.width + 100 ||
-                        line.y < -100 || line.y > this.canvas.height + 100) {
-                        this.animatedLines.splice(i, 1);
-                        this.addAnimatedLine();
-                    }
-                }
-                
-                // Update cells
-                for (const cell of this.cells) {
-                    cell.pulsePhase += cell.pulseSpeed;
-                    cell.alpha = (Math.sin(cell.pulsePhase) + 1) * 0.15 + 0.05;
-                }
-            }
-            
-            draw() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                // Draw grid lines
-                this.ctx.strokeStyle = '#0ff';
-                for (const line of this.lines) {
-                    this.ctx.globalAlpha = line.alpha;
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(line.x1, line.y1);
-                    this.ctx.lineTo(line.x2, line.y2);
-                    this.ctx.stroke();
-                }
-                
-                // Draw animated lines
-                for (const line of this.animatedLines) {
-                    this.ctx.globalAlpha = line.alpha * (line.life / line.maxLife);
-                    this.ctx.strokeStyle = '#0ff';
-                    this.ctx.lineWidth = 1.5;
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(line.x, line.y);
-                    this.ctx.lineTo(
-                        line.x + Math.cos(line.angle) * line.length,
-                        line.y + Math.sin(line.angle) * line.length
-                    );
-                    this.ctx.stroke();
-                }
-                
-                // Draw cells
-                this.ctx.fillStyle = '#0ff';
-                for (const cell of this.cells) {
-                    this.ctx.globalAlpha = cell.alpha;
-                    this.ctx.beginPath();
-                    this.ctx.arc(cell.x, cell.y, cell.size, 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-                
-                this.ctx.globalAlpha = 1;
-            }
-            
-            animate() {
-                this.update();
-                this.draw();
-                requestAnimationFrame(() => this.animate());
-            }
-        }
-
-        // AGI Simulation
-        class AGISystem {
-            constructor() {
-                this.conversationHistory = [];
-                this.memoryUsage = 0;
-                this.load = 0;
-                this.status = 'operational';
-                
-                this.knowledgeBase = {
-                    greetings: [
-                        "Greetings, user.",
-                        "Hello, program.",
-                        "System ready.",
-                        "Access granted.",
-                        "Welcome to the grid."
-                    ],
-                    questions: {
-                        "who are you": "I am a client-side AGI implementation running in your browser.",
-                        "what is this": "This is a Tron-themed interface demonstrating autonomous functionality without server dependency.",
-                        "how does this work": "All processing occurs locally using JavaScript. No data is sent to any server.",
-                        "what is agi": "Artificial General Intelligence refers to a machine's ability to understand, learn, and apply knowledge across diverse domains.",
-                        "tron": "Tron is a digital frontier that will change the way we perceive information.",
-                        "grid": "The grid is our digital landscape. You're interfacing with it now."
-                    },
-                    commands: {
-                        "clear": () => { this.clearConversation(); return "Conversation history cleared."; },
-                        "reset": () => { this.reset(); return "System reset complete. Memory purged."; },
-                        "help": () => this.getHelp(),
-                        "status": () => this.getStatus()
-                    },
-                    fallback: [
-                        "Processing... request unclear.",
-                        "Elaborate your query, user.",
-                        "Syntax not recognized.",
-                        "Try rephrasing your input.",
-                        "My circuits indicate confusion. Please clarify."
-                    ]
-                };
-            }
-            
-            processInput(input) {
-                if (!input.trim()) return "Null input detected.";
-                
-                this.addToHistory(`USER: ${input}`);
-                this.updateMetrics();
-                
-                // Check for commands first
-                const lowerInput = input.toLowerCase();
-                for (const [cmd, action] of Object.entries(this.knowledgeBase.commands)) {
-                    if (lowerInput.includes(cmd)) {
-                        return action();
-                    }
-                }
-                
-                // Check greetings
-                if (/(hello|hi|greetings)/i.test(input)) {
-                    return this.getRandomResponse(this.knowledgeBase.greetings);
-                }
-                
-                // Check questions
-                for (const [question, answer] of Object.entries(this.knowledgeBase.questions)) {
-                    if (lowerInput.includes(question)) {
-                        return answer;
-                    }
-                }
-                
-                // Fallback
-                return this.getRandomResponse(this.knowledgeBase.fallback);
-            }
-            
-            getRandomResponse(responses) {
-                return responses[Math.floor(Math.random() * responses.length)];
-            }
-            
-            addToHistory(message) {
-                this.conversationHistory.push(message);
-                this.memoryUsage = this.calculateMemoryUsage();
-            }
-            
-            calculateMemoryUsage() {
-                return JSON.stringify(this.conversationHistory).length;
-            }
-            
-            updateMetrics() {
-                this.load = Math.min(this.conversationHistory.length * 2, 100);
-                
-                if (this.load > 90) {
-                    this.status = 'critical';
-                } else if (this.load > 70) {
-                    this.status = 'high load';
-                } else if (this.load > 40) {
-                    this.status = 'moderate';
-                } else {
-                    this.status = 'operational';
-                }
-            }
-            
-            clearConversation() {
-                this.conversationHistory = [];
-                this.updateMetrics();
-            }
-            
-            reset() {
-                this.clearConversation();
-                this.memoryUsage = 0;
-                this.load = 0;
-                this.status = 'operational';
-            }
-            
-            getHelp() {
-                return "Available commands: clear, reset, help, status. You can ask about: who are you, what is this, how does this work, what is agi, tron, grid";
-            }
-            
-            getStatus() {
-                return `System status: ${this.status}. Memory usage: ${this.formatMemory(this.memoryUsage)}. Neural load: ${this.load}%`;
-            }
-            
-            formatMemory(bytes) {
-                if (bytes < 1024) return `${bytes}B`;
-                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-                return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-            }
-        }
-
-        // UI Controller
-        class UIController {
-            constructor() {
-                this.agiSystem = new AGISystem();
-                this.tronGrid = new TronGrid(document.getElementById('grid-canvas'));
-                
-                this.chatContainer = document.getElementById('chat-container');
-                this.userInput = document.getElementById('user-input');
-                this.submitBtn = document.getElementById('submit-btn');
-                this.resetBtn = document.getElementById('reset-btn');
-                
-                this.statusText = document.getElementById('status-text');
-                this.loadText = document.getElementById('load-text');
-                this.memoryText = document.getElementById('memory-text');
-                
-                this.statusMeter = document.getElementById('status-meter');
-                this.loadMeter = document.getElementById('load-meter');
-                this.memoryMeter = document.getElementById('memory-meter');
-                
-                this.setupEventListeners();
-                this.tronGrid.animate();
-                this.addSystemMessage("Initialization complete. Ready for interaction.");
-            }
-            
-            setupEventListeners() {
-                this.submitBtn.addEventListener('click', () => this.handleSubmit());
-                this.resetBtn.addEventListener('click', () => this.handleReset());
-                this.userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.handleSubmit();
-                });
-            }
-            
-            handleSubmit() {
-                const input = this.userInput.value.trim();
-                if (!input) return;
-                
-                this.addUserMessage(input);
-                this.userInput.value = '';
-                
-                // Simulate processing delay
-                setTimeout(() => {
-                    const response = this.agiSystem.processInput(input);
-                    this.addSystemMessage(response);
-                    this.updateStatusDisplay();
-                }, 500 + Math.random() * 1000);
-            }
-            
-            handleReset() {
-                this.agiSystem.reset();
-                this.chatContainer.innerHTML = '';
-                this.addSystemMessage("System reset complete. Ready for new interaction.");
-                this.updateStatusDisplay();
-            }
-            
-            addUserMessage(message) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message user-message';
-                messageDiv.innerHTML = `
-                    <div class="message-header">USER</div>
-                    <div class="message-content">${message}</div>
-                `;
-                this.chatContainer.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-            
-            addSystemMessage(message) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message ai-message';
-                messageDiv.innerHTML = `
-                    <div class="message-header">SYSTEM</div>
-                    <div class="message-content">${message}</div>
-                `;
-                this.chatContainer.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-            
-            scrollToBottom() {
-                this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
-            }
-            
-            updateStatusDisplay() {
-                this.statusText.textContent = this.agiSystem.status;
-                this.loadText.textContent = `${this.agiSystem.load}%`;
-                this.memoryText.textContent = this.agiSystem.formatMemory(this.agiSystem.memoryUsage);
-                
-                // Update meters
-                this.loadMeter.style.width = `${this.agiSystem.load}%`;
-                this.memoryMeter.style.width = `${Math.min(this.agiSystem.memoryUsage / 1024, 100)}%`;
-                
-                // Update status meter color
-                if (this.agiSystem.status.includes('critical')) {
-                    this.statusMeter.style.backgroundColor = '#f00';
-                    this.statusMeter.style.boxShadow = '0 0 5px #f00';
-                    this.statusMeter.style.width = '100%';
-                } else if (this.agiSystem.status.includes('high')) {
-                    this.statusMeter.style.backgroundColor = '#ff0';
-                    this.statusMeter.style.boxShadow = '0 0 5px #ff0';
-                    this.statusMeter.style.width = '75%';
-                } else if (this.agiSystem.status.includes('moderate')) {
-                    this.statusMeter.style.backgroundColor = '#0f0';
-                    this.statusMeter.style.boxShadow = '0 0 5px #0f0';
-                    this.statusMeter.style.width = '50%';
-                } else {
-                    this.statusMeter.style.backgroundColor = '#0ff';
-                    this.statusMeter.style.boxShadow = '0 0 5px #0ff';
-                    this.statusMeter.style.width = '25%';
-                }
-            }
-        }
-
-        // Initialize the application when the DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = new UIController();
-            
-            // Focus the input field
-            document.getElementById('user-input').focus();
-        });
-    </script>
+    <script src="js/tronGrid.js" defer></script>
+    <script src="js/agiSystem.js" defer></script>
+    <script src="js/uiController.js" defer></script>
+    <script src="js/main.js" defer></script>
 </body>
 </html>
