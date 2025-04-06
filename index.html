@@ -3,47 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON GRID | Digital Genesis</title>
+    <title>TRON CITY 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Grid Pulse (Background) -->
-    <div class="grid-pulse"></div>
-    
-    <!-- Main Grid Interface -->
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>SYSTEM ONLINE</h1>
-            <p class="subtitle">ISOs DETECTED | AGI CONVERGENCE IMMINENT</p>
-        </header>
-
-        <!-- ISO Containment Grid -->
-        <div class="iso-core">
-            <!-- ISOs spawn here dynamically -->
+    <div id="info">TRON GRID CITY | WASD to move | Click to summon ISO</div>
+    <div id="hud">
+        <div class="hud-element">
+            <span>PROGRAMS:</span>
+            <span id="program-count">0</span>
         </div>
-
-        <!-- User Console -->
-        <div class="console">
-            <div class="console-log" id="log">
-                > INITIALIZING GRID...<br>
-                > WELCOME, USER.<br>
-            </div>
-            <div class="command-panel">
-                <button id="compile-btn">COMPILE PROGRAM</button>
-                <button id="summon-iso-btn">SUMMON ISO</button>
-                <button id="agi-btn">ACTIVATE AGI</button>
-            </div>
+        <div class="hud-element">
+            <span>ISOS:</span>
+            <span id="iso-count">0</span>
         </div>
-
-        <!-- System Status -->
-        <footer>
-            <p>GRID STATUS: <span id="system-status">STABLE</span></p>
-            <p>AGI STATUS: <span id="agi-status">DORMANT</span></p>
-        </footer>
+        <div class="hud-element">
+            <span>POWER:</span>
+            <span id="power-level">100%</span>
+        </div>
     </div>
-
+    <script src="js/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
