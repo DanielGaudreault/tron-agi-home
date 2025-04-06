@@ -1,393 +1,547 @@
-// ================ ENHANCED TRON GAME ================
-// Improved version with boundaries, detailed players, and collisions
+// ================ TRON ULTIMATE ================
+// The most advanced browser-based Tron experience
 
-// Enhanced Configuration
+// Game Configuration
 const CONFIG = {
-    gridSize: 100,
+    // World settings
+    gridSize: 200,
     cellSize: 2,
-    gridColor: 0x003300,
+    gridColor: 0x003333,
     lightColor: 0x00ffff,
-    buildingColors: [0x111122, 0x112211, 0x221111],
+    buildingDensity: 0.2,
+    
+    // Player settings
     playerColors: [0x00ffff, 0xff00ff, 0xffff00, 0xff8800],
-    moveSpeed: 0.15,
-    turnSpeed: 0.1,
-    wallHeight: 2,
-    wallOpacity: 0.8,
-    fov: 75,
-    cameraDistance: 30,
-    cameraHeight: 15,
-    gridBoundary: 0.5, // How close players can get to edge
-    buildingPadding: 1.2 // Space around buildings for collision
+    moveSpeed: 0.2,
+    turnSpeed: 0.08,
+    wallHeight: 3,
+    wallOpacity: 0.9,
+    trailLength: 10,
+    
+    // Camera settings
+    fov: 70,
+    cameraDistance: 40,
+    cameraHeight: 25,
+    cameraAngle: Math.PI / 4,
+    
+    // Graphics settings
+    bloomStrength: 1.5,
+    bloomRadius: 0.8,
+    bloomThreshold: 0.4,
+    exposure: 1.2,
+    
+    // Game rules
+    wallInterval: 100,
+    gridBoundary: 1.0,
+    buildingPadding: 1.3,
+    crashTimeout: 1000
 };
 
-// Enhanced Game State
+// Game State
 const gameState = {
+    // Core state
     players: {},
     walls: [],
     buildings: [],
     myPlayerId: null,
     playerName: "",
+    playerColor: 0x00ffff,
     gameStarted: false,
+    gameTime: 0,
+    
+    // Technical state
+    clock: new THREE.Clock(),
     lastWallTime: 0,
-    wallInterval: 100,
-    clock: 0,
-    gridBoundary: CONFIG.gridSize/2 - CONFIG.gridBoundary
+    gridBoundary: CONFIG.gridSize/2 - CONFIG.gridBoundary,
+    resizeDebounce: null,
+    
+    // DOM elements
+    elements: {
+        loadingScreen: document.getElementById('loading-screen'),
+        startScreen: document.getElementById('start-screen'),
+        gameUI: document.getElementById('game-ui'),
+        playerNameInput: document.getElementById('player-name'),
+        enterButton: document.getElementById('enter-button'),
+        colorOptions: document.querySelectorAll('.color-option'),
+        playerNameDisplay: document.querySelector('.player-name'),
+        playerScore: document.querySelector('.player-score'),
+        playerCount: document.getElementById('player-count'),
+        playerPosition: document.getElementById('player-position'),
+        gameTime: document.getElementById('game-time')
+    }
 };
 
-// Initialize the enhanced game
-function initGame() {
-    // Three.js Setup (same as before)
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000011);
-    
-    camera = new THREE.PerspectiveCamera(
-        CONFIG.fov,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-    );
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
-    
-    setupLighting();
-    createWorld();
-    setupEventListeners();
-    animate();
-}
+// Three.js Variables
+let scene, camera, renderer, composer, bloomPass;
+let grid, directionalLight, hemisphereLight;
+let effectController = {
+    bloomStrength: CONFIG.bloomStrength,
+    bloomRadius: CONFIG.bloomRadius,
+    bloomThreshold: CONFIG.bloomThreshold
+};
 
-// Enhanced Player Model
-function createPlayerModel(color) {
-    const group = new THREE.Group();
-    
-    // Main body (more detailed)
-    const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.6, 2.5, 8);
-    const bodyMaterial = new THREE.MeshPhongMaterial({
-        color: color,
-        emissive: color,
-        emissiveIntensity: 0.6,
-        shininess: 100
-    });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.rotation.x = Math.PI / 2;
-    body.castShadow = true;
-    group.add(body);
-
-    // Head (more detailed)
-    const headGeometry = new THREE.DodecahedronGeometry(0.7, 1);
-    const headMaterial = new THREE.MeshPhongMaterial({
-        color: color,
-        emissive: color,
-        emissiveIntensity: 0.8
-    });
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.y = 0;
-    head.position.z = 1.2;
-    head.castShadow = true;
-    group.add(head);
-
-    // Arms
-    const armGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 6);
-    const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
-    leftArm.position.set(-0.8, 0, 0.5);
-    leftArm.rotation.z = Math.PI / 3;
-    group.add(leftArm);
-
-    const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
-    rightArm.position.set(0.8, 0, 0.5);
-    rightArm.rotation.z = -Math.PI / 3;
-    group.add(rightArm);
-
-    // Legs
-    const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 6);
-    const leftLeg = new THREE.Mesh(legGeometry, bodyMaterial);
-    leftLeg.position.set(-0.4, 0, -0.8);
-    group.add(leftLeg);
-
-    const rightLeg = new THREE.Mesh(legGeometry, bodyMaterial);
-    rightLeg.position.set(0.4, 0, -0.8);
-    group.add(rightLeg);
-
-    // Light trail (more elaborate)
-    const trailGroup = new THREE.Group();
-    const trailGeometry = new THREE.CylinderGeometry(0.3, 0.1, 3, 8);
-    const trailMaterial = new THREE.MeshPhongMaterial({
-        color: color,
-        emissive: color,
-        transparent: true,
-        opacity: 0.8
-    });
-    
-    for (let i = 0; i < 3; i++) {
-        const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-        trail.position.z = -1.5 - (i * 0.3);
-        trail.rotation.x = Math.PI / 2;
-        trail.scale.set(1, 1, 1 - (i * 0.2));
-        trailGroup.add(trail);
-    }
-    group.add(trailGroup);
-
-    // Glowing aura
-    const auraGeometry = new THREE.SphereGeometry(1.2, 16, 16);
-    const auraMaterial = new THREE.MeshPhongMaterial({
-        color: color,
-        emissive: color,
-        transparent: true,
-        opacity: 0.2,
-        side: THREE.DoubleSide
-    });
-    const aura = new THREE.Mesh(auraGeometry, auraMaterial);
-    group.add(aura);
-
-    return group;
-}
-
-// Enhanced movement with boundaries
-function updatePlayerMovement(player, deltaTime) {
-    const oldX = player.x;
-    const oldZ = player.z;
-    
-    // Handle input
-    if (player.id === gameState.myPlayerId) {
-        handlePlayerInput(player);
-    } else if (player.isAI) {
-        handleAIInput(player, deltaTime);
+// Initialize the game
+class TronGame {
+    constructor() {
+        this.initThreeJS();
+        this.initWorld();
+        this.initEventListeners();
+        this.animate();
     }
     
-    // Calculate proposed new position
-    let newX = player.x + player.direction.x * player.speed;
-    let newZ = player.z + player.direction.z * player.speed;
-    
-    // Enforce grid boundaries
-    newX = Math.max(-gameState.gridBoundary, Math.min(gameState.gridBoundary, newX));
-    newZ = Math.max(-gameState.gridBoundary, Math.min(gameState.gridBoundary, newZ));
-    
-    // Check building collisions
-    if (checkBuildingCollision(newX, newZ)) {
-        // If would collide with building, revert to old position
-        newX = oldX;
-        newZ = oldZ;
+    initThreeJS() {
+        // Scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000011);
+        scene.fog = new THREE.FogExp2(0x000822, 0.002);
         
-        // Change direction for AI players
-        if (player.isAI) {
-            player.direction.x = -player.direction.x;
-            player.direction.z = -player.direction.z;
-            player.lastTurn = 0;
-        }
-    }
-    
-    // Only create wall if position changed
-    if ((newX !== oldX || newZ !== oldZ) && 
-        Date.now() - player.lastWallTime > gameState.wallInterval) {
-        createPlayerWall(player, newX, newZ);
-        player.lastWallTime = Date.now();
-    }
-    
-    // Update position
-    player.x = newX;
-    player.z = newZ;
-    player.model.position.set(player.x, 0, player.z);
-    
-    // Rotate model to face direction
-    if (player.direction.x !== 0 || player.direction.z !== 0) {
-        player.model.rotation.y = Math.atan2(
-            player.direction.x, 
-            -player.direction.z
+        // Camera
+        camera = new THREE.PerspectiveCamera(
+            CONFIG.fov,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
         );
-    }
-    
-    // Update camera for human player
-    if (player.id === gameState.myPlayerId) {
-        updateCamera(player);
-        updateUI(player);
-    }
-}
-
-// Handle player input with smoother turning
-function handlePlayerInput(player) {
-    const turnSpeed = CONFIG.turnSpeed;
-    
-    // Reset direction if no input
-    if (!(gameState.keys['ArrowUp'] || gameState.keys['KeyW'] || 
-          gameState.keys['ArrowDown'] || gameState.keys['KeyS'] ||
-          gameState.keys['ArrowLeft'] || gameState.keys['KeyA'] || 
-          gameState.keys['ArrowRight'] || gameState.keys['KeyD'])) {
-        return;
-    }
-    
-    // Calculate desired direction
-    let desiredX = 0;
-    let desiredZ = 0;
-    
-    if (gameState.keys['ArrowUp'] || gameState.keys['KeyW']) desiredZ = -1;
-    if (gameState.keys['ArrowDown'] || gameState.keys['KeyS']) desiredZ = 1;
-    if (gameState.keys['ArrowLeft'] || gameState.keys['KeyA']) desiredX = -1;
-    if (gameState.keys['ArrowRight'] || gameState.keys['KeyD']) desiredX = 1;
-    
-    // Normalize diagonal movement
-    if (desiredX !== 0 && desiredZ !== 0) {
-        desiredX *= 0.7071;
-        desiredZ *= 0.7071;
-    }
-    
-    // Smooth turning
-    player.direction.x = lerp(player.direction.x, desiredX, turnSpeed);
-    player.direction.z = lerp(player.direction.z, desiredZ, turnSpeed);
-    
-    // Normalize after interpolation
-    const len = Math.sqrt(player.direction.x**2 + player.direction.z**2);
-    if (len > 0) {
-        player.direction.x /= len;
-        player.direction.z /= len;
-    }
-}
-
-// Linear interpolation helper
-function lerp(a, b, t) {
-    return a + (b - a) * t;
-}
-
-// Enhanced AI with better pathfinding
-function handleAIInput(player, deltaTime) {
-    player.lastTurn += deltaTime;
-    
-    // Turn randomly or when near edge/building
-    if (player.lastTurn > 2 || 
-        Math.abs(player.x) > gameState.gridBoundary - 2 ||
-        Math.abs(player.z) > gameState.gridBoundary - 2 ||
-        checkBuildingCollision(
-            player.x + player.direction.x * 3,
-            player.z + player.direction.z * 3
-        )) {
         
-        // Try to find a clear direction
-        const angles = [0, Math.PI/2, Math.PI, -Math.PI/2];
-        const shuffled = angles.sort(() => Math.random() - 0.5);
+        // Renderer
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: "high-performance"
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = CONFIG.exposure;
+        document.body.appendChild(renderer.domElement);
         
-        for (const angle of shuffled) {
-            const testX = Math.cos(angle);
-            const testZ = Math.sin(angle);
-            
-            if (!checkBuildingCollision(
-                player.x + testX * 3,
-                player.z + testZ * 3
-            )) {
-                player.direction.x = testX;
-                player.direction.z = testZ;
-                break;
-            }
-        }
-        
-        player.lastTurn = 0;
-    }
-}
-
-// Check if position collides with any building
-function checkBuildingCollision(x, z) {
-    for (const building of gameState.buildings) {
-        const halfWidth = (building.width * CONFIG.cellSize * CONFIG.buildingPadding) / 2;
-        const halfDepth = (building.depth * CONFIG.cellSize * CONFIG.buildingPadding) / 2;
-        
-        if (x > building.x * CONFIG.cellSize - halfWidth &&
-            x < building.x * CONFIG.cellSize + halfWidth &&
-            z > building.z * CONFIG.cellSize - halfDepth &&
-            z < building.z * CONFIG.cellSize + halfDepth) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Enhanced collision detection
-function checkCollisions() {
-    // Clean up old walls
-    if (gameState.walls.length > 200) {
-        const toRemove = gameState.walls.splice(0, 50);
-        toRemove.forEach(wall => scene.remove(wall.mesh));
+        // Post-processing
+        this.initPostProcessing();
     }
     
-    // Check all players against walls and boundaries
-    Object.values(gameState.players).forEach(player => {
-        // Check boundary collisions
-        if (Math.abs(player.x) >= gameState.gridBoundary || 
-            Math.abs(player.z) >= gameState.gridBoundary) {
-            handlePlayerCrash(player);
-            return;
-        }
+    initPostProcessing() {
+        const renderScene = new THREE.RenderPass(scene, camera);
         
-        // Check wall collisions
-        for (const wall of gameState.walls) {
-            if (wall.owner !== player.id) {
-                if (checkWallCollision(player, wall)) {
-                    handlePlayerCrash(player);
-                    break;
+        bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            CONFIG.bloomStrength,
+            CONFIG.bloomRadius,
+            CONFIG.bloomThreshold
+        );
+        
+        composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+    }
+    
+    initWorld() {
+        // Lighting
+        this.setupLighting();
+        
+        // Create grid
+        grid = this.createGrid();
+        scene.add(grid);
+        
+        // Create buildings
+        this.createBuildings();
+        
+        // Initial camera position
+        camera.position.set(0, CONFIG.cameraHeight, CONFIG.cameraDistance);
+        camera.lookAt(0, 0, 0);
+        
+        // Simulate loading complete
+        setTimeout(() => {
+            gameState.elements.loadingScreen.style.opacity = 0;
+            setTimeout(() => {
+                gameState.elements.loadingScreen.style.display = 'none';
+                gameState.elements.startScreen.classList.add('active');
+            }, 1000);
+        }, 2000);
+    }
+    
+    setupLighting() {
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x222233);
+        scene.add(ambientLight);
+        
+        // Hemisphere light
+        hemisphereLight = new THREE.HemisphereLight(0x00aaff, 0xffaa00, 0.3);
+        scene.add(hemisphereLight);
+        
+        // Directional light (sun)
+        directionalLight = new THREE.DirectionalLight(0x00ffff, 1.5);
+        directionalLight.position.set(1, 1, 0.5).normalize();
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        directionalLight.shadow.camera.left = -50;
+        directionalLight.shadow.camera.right = 50;
+        directionalLight.shadow.camera.top = 50;
+        directionalLight.shadow.camera.bottom = -50;
+        directionalLight.shadow.bias = -0.0001;
+        scene.add(directionalLight);
+        
+        // Light helper (for debugging)
+        // const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+        // scene.add(lightHelper);
+    }
+    
+    createGrid() {
+        const group = new THREE.Group();
+        const halfSize = CONFIG.gridSize / 2;
+        
+        // Ground plane
+        const groundGeometry = new THREE.PlaneGeometry(
+            CONFIG.gridSize * CONFIG.cellSize,
+            CONFIG.gridSize * CONFIG.cellSize,
+            CONFIG.gridSize,
+            CONFIG.gridSize
+        );
+        
+        // Custom shader material for grid
+        const groundMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                color1: { value: new THREE.Color(0x001122) },
+                color2: { value: new THREE.Color(0x003344) },
+                lineColor: { value: new THREE.Color(0x00ffff) },
+                lineWidth: { value: 0.05 },
+                gridSize: { value: CONFIG.cellSize }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
+            `,
+            fragmentShader: `
+                uniform vec3 color1;
+                uniform vec3 color2;
+                uniform vec3 lineColor;
+                uniform float lineWidth;
+                uniform float gridSize;
+                varying vec2 vUv;
+                
+                void main() {
+                    vec2 coord = vUv * gridSize;
+                    vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+                    float line = min(grid.x, grid.y);
+                    float alpha = 1.0 - min(line, 1.0);
+                    
+                    // Checkerboard pattern
+                    float check = mod(floor(coord.x) + floor(coord.y), 2.0);
+                    vec3 baseColor = mix(color1, color2, check);
+                    
+                    // Combine with grid lines
+                    vec3 color = mix(baseColor, lineColor, alpha * 0.5);
+                    
+                    // Add glow effect
+                    float glow = smoothstep(0.0, 0.2, alpha);
+                    color += lineColor * glow * 0.3;
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            side: THREE.DoubleSide
+        });
+        
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        group.add(ground);
+        
+        // Grid border
+        const borderGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(
+            CONFIG.gridSize * CONFIG.cellSize,
+            1,
+            CONFIG.gridSize * CONFIG.cellSize
+        ));
+        const borderMaterial = new THREE.LineBasicMaterial({
+            color: 0x00ffff,
+            linewidth: 2
+        });
+        const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+        border.position.y = 0.01;
+        group.add(border);
+        
+        return group;
+    }
+    
+    createBuildings() {
+        const halfSize = CONFIG.gridSize / 2;
+        const buildingCount = Math.floor(CONFIG.gridSize * CONFIG.gridSize * CONFIG.buildingDensity / 100);
+        
+        for (let i = 0; i < buildingCount; i++) {
+            // Find valid position (not too close to center or other buildings)
+            let x, z, validPosition;
+            let attempts = 0;
+            
+            do {
+                validPosition = true;
+                x = Math.floor(Math.random() * CONFIG.gridSize - halfSize);
+                z = Math.floor(Math.random() * CONFIG.gridSize - halfSize);
+                
+                // Don't place near center
+                if (Math.abs(x) < 20 && Math.abs(z) < 20) {
+                    validPosition = false;
+                    continue;
+                }
+                
+                // Check distance to other buildings
+                for (const building of gameState.buildings) {
+                    const dx = x - building.x;
+                    const dz = z - building.z;
+                    const distance = Math.sqrt(dx * dx + dz * dz);
+                    
+                    if (distance < 5) { // Minimum distance between buildings
+                        validPosition = false;
+                        break;
+                    }
+                }
+                
+                attempts++;
+                if (attempts > 100) break; // Prevent infinite loop
+            } while (!validPosition);
+            
+            if (!validPosition) continue;
+            
+            // Building dimensions
+            const width = Math.floor(Math.random() * 6) + 3;
+            const depth = Math.floor(Math.random() * 6) + 3;
+            const height = Math.floor(Math.random() * 15) + 5;
+            const floors = Math.floor(height / 3);
+            const color = CONFIG.buildingColors[Math.floor(Math.random() * CONFIG.buildingColors.length)];
+            
+            // Create building
+            const building = this.createBuilding(x, z, width, depth, height, floors, color);
+            scene.add(building);
+            
+            // Add to game state
+            gameState.buildings.push({
+                x, z, width, depth, height,
+                mesh: building
+            });
+        }
+    }
+    
+    createBuilding(x, z, width, depth, height, floors, color) {
+        const group = new THREE.Group();
+        const buildingColor = new THREE.Color(color);
+        
+        // Main structure
+        const geometry = new THREE.BoxGeometry(
+            width * CONFIG.cellSize,
+            height * CONFIG.cellSize,
+            depth * CONFIG.cellSize
+        );
+        
+        // Create slightly darker color for sides
+        const sideColor = buildingColor.clone();
+        sideColor.multiplyScalar(0.8);
+        
+        const materials = [
+            new THREE.MeshPhongMaterial({ color: sideColor }), // right
+            new THREE.MeshPhongMaterial({ color: sideColor }), // left
+            new THREE.MeshPhongMaterial({ color: buildingColor }), // top
+            new THREE.MeshPhongMaterial({ color: buildingColor }), // bottom
+            new THREE.MeshPhongMaterial({ color: sideColor }), // front
+            new THREE.MeshPhongMaterial({ color: sideColor })  // back
+        ];
+        
+        const building = new THREE.Mesh(geometry, materials);
+        building.position.set(
+            x * CONFIG.cellSize,
+            (height * CONFIG.cellSize) / 2,
+            z * CONFIG.cellSize
+        );
+        building.castShadow = true;
+        building.receiveShadow = true;
+        group.add(building);
+        
+        // Add windows
+        const windowColor = 0x00ffff;
+        const windowSize = 0.8;
+        const windowSpacing = 1.2;
+        
+        for (let floor = 1; floor <= floors; floor++) {
+            const floorHeight = (floor / floors) * height * CONFIG.cellSize - (CONFIG.cellSize * 0.5);
+            
+            // Front and back windows
+            for (let w = -width/2 + 0.5; w <= width/2 - 0.5; w += windowSpacing) {
+                // Front
+                const frontWindow = this.createWindow(
+                    w * CONFIG.cellSize,
+                    floorHeight,
+                    (-depth/2 + 0.1) * CONFIG.cellSize,
+                    windowSize,
+                    windowColor
+                );
+                group.add(frontWindow);
+                
+                // Back
+                const backWindow = this.createWindow(
+                    w * CONFIG.cellSize,
+                    floorHeight,
+                    (depth/2 - 0.1) * CONFIG.cellSize,
+                    windowSize,
+                    windowColor
+                );
+                group.add(backWindow);
+            }
+            
+            // Side windows (skip corners)
+            for (let d = -depth/2 + 1; d <= depth/2 - 1; d += windowSpacing) {
+                // Left
+                const leftWindow = this.createWindow(
+                    (-width/2 + 0.1) * CONFIG.cellSize,
+                    floorHeight,
+                    d * CONFIG.cellSize,
+                    windowSize,
+                    windowColor,
+                    true
+                );
+                group.add(leftWindow);
+                
+                // Right
+                const rightWindow = this.createWindow(
+                    (width/2 - 0.1) * CONFIG.cellSize,
+                    floorHeight,
+                    d * CONFIG.cellSize,
+                    windowSize,
+                    windowColor,
+                    true
+                );
+                group.add(rightWindow);
             }
         }
-    });
-}
-
-// Precise wall collision checking
-function checkWallCollision(player, wall) {
-    const playerRadius = 0.8;
-    const wallThickness = 0.5;
-    
-    // Convert wall to line segment
-    const wallStart = new THREE.Vector2(wall.start.x, wall.start.z);
-    const wallEnd = new THREE.Vector2(wall.end.x, wall.end.z);
-    const playerPos = new THREE.Vector2(player.x, player.z);
-    
-    // Find closest point on wall segment to player
-    const closest = playerPos.clampToLineSegment(wallStart, wallEnd);
-    const distance = playerPos.distanceTo(closest);
-    
-    return distance < playerRadius + wallThickness/2;
-}
-
-// Add Vector2 extension for line segment clamp
-THREE.Vector2.prototype.clampToLineSegment = function(v1, v2) {
-    const x1 = v1.x, y1 = v1.y;
-    const x2 = v2.x, y2 = v2.y;
-    const xp = this.x, yp = this.y;
-    
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const l2 = dx*dx + dy*dy;
-    
-    if (l2 === 0) return v1.clone();
-    
-    let t = ((xp - x1) * dx + (yp - y1) * dy) / l2;
-    t = Math.max(0, Math.min(1, t));
-    
-    return new THREE.Vector2(x1 + t * dx, y1 + t * dy);
-};
-
-// Handle player crash
-function handlePlayerCrash(player) {
-    console.log(`${player.name} crashed!`);
-    
-    // Visual effect
-    player.model.traverse(child => {
-        if (child.material) {
-            child.material.emissive.setHex(0xff0000);
-            child.material.color.setHex(0xff0000);
-        }
-    });
-    
-    // Remove from game after delay
-    setTimeout(() => {
-        scene.remove(player.model);
-        delete gameState.players[player.id];
         
-        // Update UI
-        if (player.id === gameState.myPlayerId) {
-            uiElements.score.textContent = `Players: ${Object.keys(gameState.players).length}`;
-            alert("Game Over! You crashed.");
+        // Add neon edges
+        const edges = new THREE.EdgesGeometry(geometry);
+        const edgeMaterial = new THREE.LineBasicMaterial({
+            color: CONFIG.lightColor,
+            linewidth: 2
+        });
+        const edgesMesh = new THREE.LineSegments(edges, edgeMaterial);
+        edgesMesh.position.copy(building.position);
+        group.add(edgesMesh);
+        
+        // Add roof details
+        if (height > 10) {
+            const roofGeometry = new THREE.CylinderGeometry(
+                width * CONFIG.cellSize * 0.3,
+                width * CONFIG.cellSize * 0.7,
+                CONFIG.cellSize * 2,
+                6
+            );
+            const roofMaterial = new THREE.MeshPhongMaterial({
+                color: buildingColor,
+                emissive: 0x111111
+            });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.set(
+                x * CONFIG.cellSize,
+                height * CONFIG.cellSize + CONFIG.cellSize,
+                z * CONFIG.cellSize
+            );
+            roof.rotation.x = Math.PI / 2;
+            group.add(roof);
+            
+            // Roof antenna
+            const antennaGeometry = new THREE.CylinderGeometry(0.1, 0.1, height * 0.3, 8);
+            const antennaMaterial = new THREE.MeshPhongMaterial({
+                color: 0x888888,
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.3
+            });
+            const antenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
+            antenna.position.set(
+                x * CONFIG.cellSize,
+                height * CONFIG.cellSize + height * 0.15 + CONFIG.cellSize * 2,
+                z * CONFIG.cellSize
+            );
+            group.add(antenna);
         }
-    }, 500);
-}
-
-// Initialize the enhanced game
-window.addEventListener('load', initGame);
+        
+        return group;
+    }
+    
+    createWindow(x, y, z, size, color, rotate = false) {
+        const geometry = new THREE.PlaneGeometry(size, size);
+        const material = new THREE.MeshPhongMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 0.5,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8
+        });
+        const window = new THREE.Mesh(geometry, material);
+        window.position.set(x, y, z);
+        
+        if (rotate) {
+            window.rotation.y = Math.PI / 2;
+        } else {
+            window.rotation.x = Math.PI / 2;
+        }
+        
+        return window;
+    }
+    
+    createPlayerModel(color) {
+        const group = new THREE.Group();
+        const playerColor = new THREE.Color(color);
+        const emissiveColor = playerColor.clone().multiplyScalar(0.7);
+        
+        // Body (armored suit)
+        const bodyGeometry = new THREE.CylinderGeometry(0.8, 0.6, 2.2, 8);
+        const bodyMaterial = new THREE.MeshPhongMaterial({
+            color: playerColor,
+            emissive: emissiveColor,
+            emissiveIntensity: 0.6,
+            shininess: 100,
+            flatShading: true
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.rotation.x = Math.PI / 2;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Chest plate
+        const chestGeometry = new THREE.SphereGeometry(0.7, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const chestMaterial = new THREE.MeshPhongMaterial({
+            color: playerColor,
+            emissive: emissiveColor,
+            emissiveIntensity: 0.7,
+            flatShading: true
+        });
+        const chest = new THREE.Mesh(chestGeometry, chestMaterial);
+        chest.position.z = 0.8;
+        chest.rotation.x = Math.PI / 2;
+        group.add(chest);
+        
+        // Head (helmet)
+        const headGeometry = new THREE.DodecahedronGeometry(0.7, 1);
+        const headMaterial = new THREE.MeshPhongMaterial({
+            color: playerColor,
+            emissive: emissiveColor,
+            emissiveIntensity: 0.8,
+            flatShading: true
+        });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.z = 1.5;
+        group.add(head);
+        
+        // Visor
+        const visorGeometry = new THREE.CircleGeometry(0.4, 8);
+        const visorMaterial = new THREE.MeshPhongMaterial({
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: 1.0,
+            transparent: true,
+            opacity: 0.9
+        });
+        const visor = new THREE.Mesh(visorGeometry, visorMaterial);
+        visor.position.z = 1.5 + 0
