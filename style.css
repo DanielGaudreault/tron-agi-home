@@ -1,38 +1,99 @@
 body {
   margin: 0;
   overflow: hidden;
-  background: black;
+  background: #000;
   font-family: 'Courier New', monospace;
+  color: #0ff;
 }
 
-#grid-container {
-  width: 100vw;
-  height: 100vh;
-}
-
-#chat-ui {
+#loading {
   position: absolute;
-  bottom: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  text-shadow: 0 0 10px #0ff;
+  z-index: 100;
+}
+
+#tron-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#hud {
+  position: absolute;
+  top: 20px;
   left: 20px;
-  width: 300px;
   background: rgba(0, 0, 0, 0.7);
-  border: 2px solid #00ffff;
-  color: #00ffff;
   padding: 10px;
+  border: 1px solid #0ff;
   border-radius: 5px;
 }
 
-#chat-output {
+.hud-item {
+  margin: 5px 0;
+}
+
+.hud-label {
+  display: inline-block;
+  width: 120px;
+}
+
+#console {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #0ff;
+  padding: 10px;
+}
+
+#output {
   height: 200px;
   overflow-y: auto;
   margin-bottom: 10px;
 }
 
+#input-container {
+  display: flex;
+}
+
 #user-input {
-  width: 100%;
-  background: black;
-  color: #00ffff;
-  border: 1px solid #00ffff;
+  flex-grow: 1;
+  background: #111;
+  color: #0ff;
+  border: 1px solid #0ff;
   padding: 8px;
   font-family: 'Courier New', monospace;
+}
+
+#submit {
+  background: #0ff;
+  color: #000;
+  border: none;
+  padding: 0 15px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.message {
+  margin: 5px 0;
+  padding: 5px;
+  border-bottom: 1px solid #333;
+}
+
+.user-message {
+  color: #0f0;
+}
+
+.ai-message {
+  color: #0ff;
+}
+
+.system-message {
+  color: #f0f;
+  font-style: italic;
 }
