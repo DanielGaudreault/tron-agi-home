@@ -3,51 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON AGI</title>
+    <title>TRON Autonomous Learning Core</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body {
-            font-family: 'Orbitron', sans-serif;
+        @font-face {
+            font-family: 'Orbitron';
+            src: url('assets/fonts/Orbitron.ttf') format('truetype');
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        <div class="loader">LOADING...</div>
-    </div>
-
-    <div id="app-container">
-        <div id="hud">
-            <div class="hud-item">
-                <span>SYSTEM STATUS:</span>
-                <span id="system-status">ONLINE</span>
-            </div>
-            <div class="hud-item">
-                <span>LEARNING RATE:</span>
-                <span id="learning-rate">0.85</span>
-            </div>
-        </div>
-
-        <div id="console">
-            <div id="output"></div>
-            <div id="input-container">
-                <input type="text" id="user-input" placeholder="ENTER COMMAND...">
-                <button id="submit">EXECUTE</button>
+        <div class="loader-grid">
+            <div class="grid-line vertical"></div>
+            <div class="grid-line horizontal"></div>
+            <div class="center-dot"></div>
+            <div class="loading-text">INITIALIZING NEURAL MATRIX</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+                <div class="progress-text">0%</div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="tron-grid"></div>
+
+    <div id="system-hud">
+        <div class="hud-panel">
+            <div class="panel-header">CORE STATUS</div>
+            <div class="hud-item">
+                <span class="hud-label">LEARNING RATE:</span>
+                <span id="learning-rate" class="hud-value">0.85</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">MEMORY NODES:</span>
+                <span id="memory-nodes" class="hud-value">1,024</span>
+            </div>
+        </div>
+        
+        <div class="hud-panel">
+            <div class="panel-header">NEURAL NETWORK</div>
+            <div class="hud-item">
+                <span class="hud-label">CONCEPT LINKS:</span>
+                <span id="concept-links" class="hud-value">5,248</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">SESSION ID:</span>
+                <span id="session-id" class="hud-value">TRON-AGI-XXXXX</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-console">
+        <div id="console-output"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="DIRECT INPUT..." autocomplete="off">
+            <button id="submit-btn">
+                <span>EXECUTE</span>
+                <div class="btn-pulse"></div>
+            </button>
+        </div>
+    </div>
+
+    <div id="energy-pulse"></div>
+
+    <script src="agi.js"></script>
     <script>
-        // Simple loading simulation
-        setTimeout(() => {
-            document.getElementById('loading-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-                initAGISystem();
-            }, 500);
-        }, 1500);
+        // Simulate system boot
+        let loadProgress = 0;
+        const loadInterval = setInterval(() => {
+            loadProgress += Math.random() * 20;
+            if (loadProgress >= 100) {
+                clearInterval(loadInterval);
+                document.querySelector('.progress-bar').style.width = '100%';
+                document.querySelector('.progress-text').textContent = '100%';
+                
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                        window.agi = new TRON_AGI();
+                    }, 500);
+                }, 300);
+            } else {
+                document.querySelector('.progress-bar').style.width = loadProgress + '%';
+                document.querySelector('.progress-text').textContent = Math.floor(loadProgress) + '%';
+            }
+        }, 100);
     </script>
 </body>
 </html>
