@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TRON AGI Home</title>
+  <title>TRON Self-Learning AGI</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+  <script src="three-tron.js"></script>
+  <script src="agi.js"></script>
 </head>
 <body>
-  <div id="grid-container"></div>
-  <div id="chat-ui">
-    <div id="chat-output"></div>
-    <input id="user-input" placeholder="Talk to the AI...">
+  <div id="loading">Initializing Neural Matrix...</div>
+  
+  <div id="tron-container"></div>
+  
+  <div id="hud">
+    <div class="hud-item">
+      <span class="hud-label">Learning Rate:</span>
+      <span id="learning-rate">0.72</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Memory Nodes:</span>
+      <span id="memory-nodes">1,024</span>
+    </div>
   </div>
-  <script src="script.js"></script>
+  
+  <div id="console">
+    <div id="output"></div>
+    <div id="input-container">
+      <input type="text" id="user-input" placeholder="Direct Input...">
+      <button id="submit">Execute</button>
+    </div>
+  </div>
+  
+  <script>
+    window.onload = initAGISystem;
+  </script>
 </body>
 </html>
