@@ -1,0 +1,294 @@
+class TronGrid {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.resize();
+        
+        // Grid configuration
+        this.gridSize = 40;
+        this.lineWidth = 1;
+        this.gridColor = '#0ff';
+        this.cellColor = '#0ff';
+        
+        // Animation elements
+        this.lines = [];
+        this.animatedLines = [];
+        this.cells = [];
+        this.particles = [];
+        
+        // Performance optimization
+        this.lastFrameTime = 0;
+        this.frameInterval = 1000 / 60; // 60 FPS
+        
+        // Initialize grid elements
+        this.initGrid();
+        this.initAnimatedLines(15);
+        this.initCells(50);
+        
+        // Event listeners
+        window.addEventListener('resize', () => {
+            this.resize();
+            this.initGrid();
+        });
+        
+        // Start animation
+        this.isAnimating = true;
+        this.animate();
+    }
+    
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+    
+    initGrid() {
+        this.lines = [];
+        
+        // Vertical lines
+        for (let x = 0; x < this.canvas.width; x += this.gridSize) {
+            this.lines.push({
+                x1: x, y1: 0,
+                x2: x, y2: this.canvas.height,
+                alpha: Math.random() * 0.1 + 0.05,
+                speed: Math.random() * 0.5 + 0.1
+            });
+        }
+        
+        // Horizontal lines
+        for (let y = 0; y < this.canvas.height; y += this.gridSize) {
+            this.lines.push({
+                x1: 0, y1: y,
+                x2: this.canvas.width, y2: y,
+                alpha: Math.random() * 0.1 + 0.05,
+                speed: Math.random() * 0.5 + 0.1
+            });
+        }
+    }
+    
+    initAnimatedLines(count) {
+        for (let i = 0; i < count; i++) {
+            this.addAnimatedLine();
+        }
+    }
+    
+    addAnimatedLine() {
+        const side = Math.floor(Math.random() * 4);
+        let x, y, angle;
+        
+        switch(side) {
+            case 0: // top
+                x = Math.random() * this.canvas.width;
+                y = -20;
+                angle = Math.PI / 2 + (Math.random() - 0.5) * Math.PI / 6;
+                break;
+            case 1: // right
+                x = this.canvas.width + 20;
+                y = Math.random() * this.canvas.height;
+                angle = Math.PI + (Math.random() - 0.5) * Math.PI / 6;
+                break;
+            case 2: // bottom
+                x = Math.random() * this.canvas.width;
+                y = this.canvas.height + 20;
+                angle = Math.PI * 1.5 + (Math.random() - 0.5) * Math.PI / 6;
+                break;
+            case 3: // left
+                x = -20;
+                y = Math.random() * this.canvas.height;
+                angle = (Math.random() - 0.5) * Math.PI / 6;
+                break;
+        }
+        
+        const length = Math.random() * 150 + 50;
+        const speed = Math.random() * 3 + 1;
+        const life = Math.random() * 100 + 100;
+        
+        this.animatedLines.push({
+            x, y,
+            length,
+            angle,
+            speed,
+            alpha: Math.random() * 0.2 + 0.1,
+            life,
+            maxLife: life,
+            color: Math.random() > 0.3 ? '#0ff' : '#f0f'
+        });
+    }
+    
+    initCells(count) {
+        for (let i = 0; i < count; i++) {
+            this.cells.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: Math.random() * 4 + 1,
+                alpha: Math.random() * 0.3 + 0.1,
+                pulseSpeed: Math.random() * 0.02 + 0.01,
+                pulsePhase: Math.random() * Math.PI * 2,
+                color: Math.random() > 0.7 ? '#f0f' : '#0ff'
+            });
+        }
+    }
+    
+    addParticle(x, y, color = '#0ff') {
+        this.particles.push({
+            x, y,
+            size: Math.random() * 3 + 1,
+            alpha: Math.random() * 0.5 + 0.5,
+            speed: Math.random() * 3 + 1,
+            angle: Math.random() * Math.PI * 2,
+            life: Math.random() * 50 + 50,
+            color
+        });
+    }
+    
+    update(timestamp) {
+        // Limit frame rate for performance
+        if (!this.lastFrameTime || timestamp - this.lastFrameTime >= this.frameInterval) {
+            this.lastFrameTime = timestamp;
+            
+            // Update animated lines
+            for (let i = this.animatedLines.length - 1; i >= 0; i--) {
+                const line = this.animatedLines[i];
+                
+                line.x += Math.cos(line.angle) * line.speed;
+                line.y += Math.sin(line.angle) * line.speed;
+                line.life--;
+                
+                if (line.life <= 0 || 
+                    line.x < -100 || line.x > this.canvas.width + 100 ||
+                    line.y < -100 || line.y > this.canvas.height + 100) {
+                    this.animatedLines.splice(i, 1);
+                    this.addAnimatedLine();
+                    
+                    // Add particles when line dies
+                    if (Math.random() > 0.7) {
+                        for (let j = 0; j < 3; j++) {
+                            this.addParticle(line.x, line.y, line.color);
+                        }
+                    }
+                }
+            }
+            
+            // Update cells
+            for (const cell of this.cells) {
+                cell.pulsePhase += cell.pulseSpeed;
+                cell.alpha = (Math.sin(cell.pulsePhase) + 1) * 0.15 + 0.05;
+                
+                // Random movement
+                if (Math.random() > 0.95) {
+                    cell.x += (Math.random() - 0.5) * 2;
+                    cell.y += (Math.random() - 0.5) * 2;
+                }
+            }
+            
+            // Update particles
+            for (let i = this.particles.length - 1; i >= 0; i--) {
+                const p = this.particles[i];
+                p.x += Math.cos(p.angle) * p.speed;
+                p.y += Math.sin(p.angle) * p.speed;
+                p.life--;
+                p.alpha = p.life / 100;
+                
+                if (p.life <= 0) {
+                    this.particles.splice(i, 1);
+                }
+            }
+            
+            // Update grid lines (subtle movement)
+            for (const line of this.lines) {
+                if (line.y1 === line.y2) { // horizontal line
+                    line.x1 += line.speed;
+                    line.x2 += line.speed;
+                    
+                    if (line.x1 > this.canvas.width) {
+                        line.x1 = 0;
+                        line.x2 = this.canvas.width;
+                    }
+                } else { // vertical line
+                    line.y1 += line.speed;
+                    line.y2 += line.speed;
+                    
+                    if (line.y1 > this.canvas.height) {
+                        line.y1 = 0;
+                        line.y2 = this.canvas.height;
+                    }
+                }
+            }
+        }
+    }
+    
+    draw() {
+        // Clear canvas with semi-transparent black for motion trails
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw grid lines
+        this.ctx.lineWidth = this.lineWidth;
+        for (const line of this.lines) {
+            this.ctx.strokeStyle = this.gridColor;
+            this.ctx.globalAlpha = line.alpha;
+            this.ctx.beginPath();
+            this.ctx.moveTo(line.x1, line.y1);
+            this.ctx.lineTo(line.x2, line.y2);
+            this.ctx.stroke();
+        }
+        
+        // Draw animated lines
+        for (const line of this.animatedLines) {
+            this.ctx.strokeStyle = line.color;
+            this.ctx.lineWidth = 1.5;
+            this.ctx.globalAlpha = line.alpha * (line.life / line.maxLife);
+            this.ctx.beginPath();
+            this.ctx.moveTo(line.x, line.y);
+            this.ctx.lineTo(
+                line.x + Math.cos(line.angle) * line.length,
+                line.y + Math.sin(line.angle) * line.length
+            );
+            this.ctx.stroke();
+        }
+        
+        // Draw cells
+        for (const cell of this.cells) {
+            this.ctx.fillStyle = cell.color;
+            this.ctx.globalAlpha = cell.alpha;
+            this.ctx.beginPath();
+            this.ctx.arc(cell.x, cell.y, cell.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        // Draw particles
+        for (const p of this.particles) {
+            this.ctx.fillStyle = p.color;
+            this.ctx.globalAlpha = p.alpha;
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        this.ctx.globalAlpha = 1;
+    }
+    
+    animate(timestamp) {
+        if (this.isAnimating) {
+            this.update(timestamp);
+            this.draw();
+            requestAnimationFrame((ts) => this.animate(ts));
+        }
+    }
+    
+    start() {
+        if (!this.isAnimating) {
+            this.isAnimating = true;
+            this.animate();
+        }
+    }
+    
+    stop() {
+        this.isAnimating = false;
+    }
+    
+    setIntensity(intensity) {
+        // Adjust grid visibility based on intensity (0-1)
+        this.lineWidth = intensity * 2;
+        this.gridOpacity = intensity * 0.2;
+    }
+}
