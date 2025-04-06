@@ -1,158 +1,39 @@
-/* === TRON GRID THEME === */
 body {
+    margin: 0;
+    overflow: hidden;
     font-family: 'Orbitron', sans-serif;
-    background-color: #000;
-    color: #0ff;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100vh;
-    text-shadow: 0 0 5px #0ff;
 }
 
-/* Grid Pulse (Animated Background) */
-.grid-pulse {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        linear-gradient(to right, #000 1px, transparent 1px),
-        linear-gradient(to bottom, #000 1px, transparent 1px);
-    background-size: 30px 30px;
-    z-index: -2;
-    opacity: 0.3;
-    animation: grid-pulse 10s infinite;
-}
-
-@keyframes grid-pulse {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.5; }
-}
-
-/* Main Container */
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header */
-header {
-    text-align: center;
-    padding: 20px;
-    border-bottom: 1px solid #0ff;
-}
-
-h1 {
-    font-size: 3em;
-    margin: 0;
-    animation: glow 2s infinite alternate;
-}
-
-.subtitle {
-    color: #ff00ff;
-    margin: 5px 0;
-}
-
-/* ISO Core (Floating Digital Lifeforms) */
-.iso-core {
-    position: relative;
-    height: 300px;
-    margin: 20px auto;
-    border: 2px dashed #0ff;
-    border-radius: 50%;
-    width: 80%;
-    overflow: hidden;
-}
-
-.iso {
+#info {
     position: absolute;
-    font-size: 24px;
-    color: #ff00ff;
-    animation: float 8s infinite ease-in-out;
-    text-shadow: 0 0 15px #ff00ff;
-    user-select: none;
-}
-
-@keyframes float {
-    0%, 100% { transform: translate(0, 0); }
-    25% { transform: translate(50px, -30px); }
-    50% { transform: translate(-30px, 40px); }
-    75% { transform: translate(40px, 20px); }
-}
-
-/* Console (Terminal Log) */
-.console {
-    border: 1px solid #0ff;
-    padding: 15px;
-    margin-top: 20px;
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.console-log {
-    height: 150px;
-    overflow-y: auto;
-    font-family: 'Courier New', monospace;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #0ff;
-    padding-bottom: 10px;
-}
-
-.command-panel {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-button {
-    background: #000;
-    color: #0ff;
-    border: 1px solid #0ff;
-    padding: 12px 25px;
-    font-family: 'Orbitron', sans-serif;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-button:hover {
-    background: #0ff;
-    color: #000;
-    box-shadow: 0 0 15px #0ff;
-}
-
-/* AGI Effects */
-.agi-active {
-    animation: agi-pulse 1s infinite, shake 0.5s infinite;
-}
-
-@keyframes agi-pulse {
-    0%, 100% { color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
-    50% { color: #0ff; text-shadow: 0 0 20px #0ff; }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-/* Footer Status */
-footer {
+    top: 10px;
+    width: 100%;
     text-align: center;
-    margin-top: auto;
-    padding: 10px;
-    border-top: 1px solid #0ff;
-}
-
-#system-status {
     color: #0ff;
+    text-shadow: 0 0 5px #0ff;
+    z-index: 100;
 }
 
-#agi-status {
-    color: #ff00ff;
+#hud {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: #0ff;
+    text-shadow: 0 0 3px #0ff;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border: 1px solid #0ff;
+    border-radius: 5px;
+}
+
+.hud-element {
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    min-width: 150px;
+}
+
+#power-level {
+    color: #0f0;
+    text-shadow: 0 0 3px #0f0;
 }
