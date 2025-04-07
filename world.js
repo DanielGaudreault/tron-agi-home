@@ -1,5 +1,6 @@
 import { AGIModel } from './agi.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/controls/OrbitControls.js';
 
 // Initialize AGI model
 const inputShape = [100, 1];
@@ -11,6 +12,9 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// Orbit Controls
+const controls = new OrbitControls(camera, renderer.domElement);
 
 // Create a grid helper for the Tron world
 const gridHelper = new THREE.GridHelper(100, 100, 0x00ff00, 0x00ff00);
@@ -34,8 +38,11 @@ camera.position.z = 5;
 
 // Load ISO model
 const loader = new GLTFLoader();
+let iso;
 loader.load('models/iso.gltf', function (gltf) {
-  scene.add(gltf.scene);
+  iso = gltf.scene;
+  iso.position.set(0, 0, 0);
+  scene.add(iso);
 }, undefined, function (error) {
   console.error(error);
 });
@@ -44,6 +51,10 @@ const animate = () => {
   requestAnimationFrame(animate);
   cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
+  if (iso) {
+    iso.rotation.y += 0.01; // Rotate ISO for animation
+  }
+  controls.update();
   renderer.render(scene, camera);
 };
 animate();
