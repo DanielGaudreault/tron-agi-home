@@ -9,10 +9,23 @@ const World = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // Create a grid helper for the Tron world
+    const gridHelper = new THREE.GridHelper(100, 100, 0x00ff00, 0x00ff00);
+    scene.add(gridHelper);
+
+    // Create a Tron-like glowing cube
     const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0x00ff00, 1, 100);
+    pointLight.position.set(50, 50, 50);
+    scene.add(pointLight);
 
     camera.position.z = 5;
 
