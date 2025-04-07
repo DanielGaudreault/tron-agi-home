@@ -1,4 +1,5 @@
 import { AGIModel } from './agi.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
 
 // Initialize AGI model
 const inputShape = [100, 1];
@@ -30,6 +31,14 @@ pointLight.position.set(50, 50, 50);
 scene.add(pointLight);
 
 camera.position.z = 5;
+
+// Load ISO model
+const loader = new GLTFLoader();
+loader.load('models/iso.gltf', function (gltf) {
+  scene.add(gltf.scene);
+}, undefined, function (error) {
+  console.error(error);
+});
 
 const animate = () => {
   requestAnimationFrame(animate);
