@@ -1,4 +1,4 @@
-// ===== TRON WORLD SIMULATION =====
+// ===== TRON WORLD - OFFLINE BROWSER GAME =====
 const canvas = document.getElementById("tronCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -74,14 +74,15 @@ class ISO {
         this.trail = [];
         this.direction = Math.random() * Math.PI * 2;
     }
-    update() {
+    update(userX, userY) {
         this.trail.push({ x: this.x, y: this.y });
         if (this.trail.length > 30) this.trail.shift();
         
-        // Random direction change
-        if (Math.random() < 0.05) {
-            this.direction = Math.random() * Math.PI * 2;
-        }
+        // Simple AI: Chase player (comment out for random movement)
+        const dx = userX - this.x;
+        const dy = userY - this.y;
+        this.direction = Math.atan2(dy, dx);
+        
         this.x += Math.cos(this.direction) * 3;
         this.y += Math.sin(this.direction) * 3;
         
@@ -119,7 +120,7 @@ function gameLoop() {
     drawGrid();
     user.draw();
     isos.forEach(iso => {
-        iso.update();
+        iso.update(user.x, user.y);  // Pass player position to ISO AI
         iso.draw();
     });
     requestAnimationFrame(gameLoop);
