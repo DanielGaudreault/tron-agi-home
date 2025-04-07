@@ -2,75 +2,16 @@
 <html>
 <head>
     <title>Tron World</title>
-    <style> body { margin: 0; overflow: hidden; } </style>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
     <canvas id="tronCanvas"></canvas>
-    <script>
-        const canvas = document.getElementById("tronCanvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        // Tron Grid
-        function drawGrid() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "rgba(0, 255, 255, 0.3)";
-            for (let x = 0; x < canvas.width; x += 40) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += 40) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-        }
-
-        // ISO Entity
-        class ISO {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.color = "yellow";
-                this.trail = [];
-            }
-            update() {
-                this.trail.push({ x: this.x, y: this.y });
-                if (this.trail.length > 20) this.trail.shift();
-                this.x += Math.random() * 6 - 3;
-                this.y += Math.random() * 6 - 3;
-            }
-            draw() {
-                // Draw trail
-                ctx.strokeStyle = "yellow";
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(this.trail[0].x, this.trail[0].y);
-                for (const point of this.trail) {
-                    ctx.lineTo(point.x, point.y);
-                }
-                ctx.stroke();
-                // Draw ISO
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        const iso = new ISO();
-        function loop() {
-            drawGrid();
-            iso.update();
-            iso.draw();
-            requestAnimationFrame(loop);
-        }
-        loop();
-    </script>
+    <script src="tron.js"></script>
+    <!-- Optional: Uncomment for AI -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script> -->
+    <!-- <script src="tf-agent.js"></script> -->
 </body>
 </html>
