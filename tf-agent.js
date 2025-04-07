@@ -15,6 +15,7 @@ class NeuralAgent {
     }
 }
 
-// Example: Use this to control an ISO
+// Example: Replace ISO's update() with AI
 // const aiAgent = new NeuralAgent();
 // const action = aiAgent.predict([iso.x, iso.y, user.x, user.y]);
+// iso.x += action[0] * 3;  // Move based on AI decision
